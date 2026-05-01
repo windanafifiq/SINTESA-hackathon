@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'dashboard_screen.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -225,10 +226,15 @@ class _MulaiButtonState extends State<_MulaiButton> {
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Dashboard Coming Soon!'),
-                  duration: Duration(seconds: 2),
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (_, animation, __) => const DashboardScreen(),
+                  transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  ),
+                  transitionDuration: const Duration(milliseconds: 500),
                 ),
               );
             },

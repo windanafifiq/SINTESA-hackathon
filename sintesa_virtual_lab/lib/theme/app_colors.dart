@@ -20,9 +20,9 @@ class AppColors {
   static const Color secondaryLight = Color(0xFFFFB38F);
 
   // Success
-  static const Color success = Color(0xFFA7FF6D);
-  static const Color successDark = Color(0xFF215200);
-  static const Color successLight = Color(0xFFCCFFCC);
+  static const Color success = Color(0xFF16A34A); // Hijau lebih gelap agar terbaca jelas
+  static const Color successDark = Color(0xFF14532D);
+  static const Color successLight = Color(0xFFBBF7D0);
   static const Color successLighter = Color(0xFFCEFFCE);
 
   // Info
