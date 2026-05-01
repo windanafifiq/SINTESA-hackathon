@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'screens/intro_screen.dart';
+import 'screens/start_screen.dart';
+import 'theme/app_colors.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,17 +18,17 @@ class VirtualLabApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Virtual Lab - Asam Basa',
+      title: 'Virtual Lab Sintesa',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF002259),
+          seedColor: AppColors.primary,
           brightness: Brightness.dark,
         ),
-        fontFamily: 'sans-serif',
         useMaterial3: true,
       ),
-      home: const IntroScreen(),
+      home: const StartScreen(),
     );
   }
 }
