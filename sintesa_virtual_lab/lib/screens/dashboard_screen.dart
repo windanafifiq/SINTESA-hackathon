@@ -391,8 +391,42 @@ class _DashboardScreenState extends State<DashboardScreen>
                               const SnackBar(content: Text('Praktikum belum tersedia.')),
                             );
                           }
+                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                            );
+                          }
                         },
                         onRestart: () {
+                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                            );
+                          }
                           if (modules[index]['title'] == 'Asam Basa Alami') {
                             Navigator.push(
                               context,
