@@ -3,7 +3,7 @@ import '../models/app_colors.dart';
 import '../models/game_state.dart';
 import '../models/solution.dart';
 import '../widgets/lab_widgets.dart';
-import 'result_screen.dart';
+import 'lab_report_flow_screen.dart';
 
 class GameScreen extends StatefulWidget {
   final GameState gameState;
@@ -307,7 +307,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _generateReport() {
     // Navigate to results but with a "Report" styling
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ResultScreen(gameState: widget.gameState)),
+      MaterialPageRoute(builder: (_) => LabReportFlowScreen()),
     );
   }
 

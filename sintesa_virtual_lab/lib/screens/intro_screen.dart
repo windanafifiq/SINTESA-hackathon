@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/app_colors.dart';
 import '../models/game_state.dart';
+import 'lab_report_flow_screen.dart';
 import 'game_screen.dart';
 
 class IntroScreen extends StatefulWidget {

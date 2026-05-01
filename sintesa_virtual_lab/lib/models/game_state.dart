@@ -107,4 +107,4 @@ class GameState extends ChangeNotifier {
     _badges.clear();
     notifyListeners();
   }
-}
+}
