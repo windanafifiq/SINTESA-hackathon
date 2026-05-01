@@ -4,7 +4,7 @@ import '../models/game_state.dart';
 import '../models/solution.dart';
 import '../widgets/lab_widgets.dart';
 import '../painters/lab_painters.dart';
-import 'intro_screen.dart';
+import 'dashboard_screen.dart';
 import 'game_screen.dart';
 
 
@@ -422,7 +422,7 @@ class _ResultScreenState extends State<ResultScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const IntroScreen()),
+                    MaterialPageRoute(builder: (_) => const DashboardScreen()),
                     (route) => false,
                   ),
                   icon: const Icon(Icons.home),

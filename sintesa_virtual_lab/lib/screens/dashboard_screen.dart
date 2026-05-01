@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import 'intro_screen.dart';
+import 'safety_procedure_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -114,9 +114,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [AppColors.secondary, AppColors.secondaryDark],
                     ),
                   ),
@@ -334,9 +334,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                         image: modules[index]['image'] as String?,
                         onTap: () {
                           if (modules[index]['title'] == 'Asam Basa Alami') {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const IntroScreen(),
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
                               ),
                             );
                           } else {
@@ -349,10 +355,23 @@ class _DashboardScreenState extends State<DashboardScreen>
                           }
                         },
                         onRestart: () {
-                          // TODO: Reset modul / mulai ulang
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Mengulang praktikum...')),
-                          );
+                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                            );
+                          }
                         },
                       );
                     },
