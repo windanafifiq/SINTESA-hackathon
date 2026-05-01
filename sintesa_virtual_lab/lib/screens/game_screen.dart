@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/app_colors.dart';
 import '../models/game_state.dart';
@@ -25,6 +26,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // ── Panels ─────────────────────────────────────────────────────────────────
   bool _isInventoryOpen = false;
   bool _isNotebookOpen = false;
+
+  // ── Timer State ────────────────────────────────────────────────────────────
+  Timer? _timer;
+  int _secondsRemaining = 120;
 
   // ── Per-flask stir animation controllers ───────────────────────────────────
   // Key = solution id
@@ -67,12 +72,36 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.gameState.goToPhase(GamePhase.step1_description);
+      _startTimer();
     });
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining > 0) {
+        setState(() {
+          _secondsRemaining--;
+        });
+      } else {
+        _timer?.cancel();
+        _onTimeUp();
+      }
+    });
+  }
+
+  void _onTimeUp() {
+    // Force navigate to report with 0 score
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => const LabReportFlowScreen(labScore: 0),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _popupCtrl.dispose();
+    _timer?.cancel();
     for (final c in _stirControllers.values) {
       c.dispose();
     }
@@ -224,6 +253,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       ),
       child: Row(
         children: [
+          // Timer in Top Left
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _secondsRemaining < 30 ? Colors.red.withOpacity(0.8) : Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _secondsRemaining < 30 ? Colors.red : Colors.white24),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.timer, color: _secondsRemaining < 30 ? Colors.white : AppColors.warning400, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  '${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}',
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 20),
           _hudStat(Icons.workspace_premium, AppColors.warning400,
               widget.gameState.masteryLevel),
           const Spacer(),
@@ -508,8 +557,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _generateReport() {
+    _timer?.cancel();
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LabReportFlowScreen()),
+      MaterialPageRoute(builder: (_) => const LabReportFlowScreen(
+        labScore: 100,
+      )),
     );
   }
 

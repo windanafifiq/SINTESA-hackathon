@@ -4,7 +4,8 @@ import '../models/app_colors.dart';
 import '../models/lab_report_model.dart';
 import '../services/lab_report_generator_service.dart' hide AppStrings;
 import '../widgets/lab_reports_widgets.dart';
-import '../screens/intro_screen.dart';
+import '../screens/dashboard_screen.dart';
+import 'quiz_screen.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // STEP ENUM
@@ -17,7 +18,8 @@ enum LabStep { form, video, completion, result }
 // ═══════════════════════════════════════════════════════════════
 
 class LabReportFlowScreen extends StatefulWidget {
-  const LabReportFlowScreen({super.key});
+  final int labScore;
+  const LabReportFlowScreen({super.key, this.labScore = 0});
 
   @override
   State<LabReportFlowScreen> createState() => _LabReportFlowScreenState();
@@ -68,6 +70,11 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
       vsync: this,
       duration: const Duration(milliseconds: 280),
     )..forward();
+    _pageFadeAnim = CurvedAnimation(
+      parent: _pageAnimCtrl,
+      curve: Curves.easeOut,
+    );
+
     _pageFadeAnim = CurvedAnimation(
       parent: _pageAnimCtrl,
       curve: Curves.easeOut,
@@ -212,7 +219,7 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => const IntroScreen(),
+        builder: (context) => const DashboardScreen(),
       ),
       (route) => false,
     );
@@ -807,8 +814,13 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
           SizedBox(
             width: double.infinity,
             child: PrimaryButton(
-              label: 'Kembali ke Beranda',
-              onPressed: _resetFlow,
+              label: 'Lanjut ke Kuis',
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => QuizScreen(labScore: widget.labScore)),
+                );
+              },
             ),
           ),
           const SizedBox(height: 20),

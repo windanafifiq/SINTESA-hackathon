@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../models/game_state.dart';
+import 'game_screen.dart';
 
 class TheoryAndToolsScreen extends StatefulWidget {
   const TheoryAndToolsScreen({super.key});
@@ -428,7 +430,12 @@ class _StartButtonState extends State<_StartButton> {
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              // TODO: Navigasi ke game / simulasi 3D
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GameScreen(gameState: GameState()),
+                ),
+              );
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),

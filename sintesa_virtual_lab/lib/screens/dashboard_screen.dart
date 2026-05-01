@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'safety_procedure_screen.dart';
+import 'grade_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,6 +23,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     {'label': 'Kimia', 'icon': Icons.science_rounded},
     {'label': 'Biologi', 'icon': Icons.eco_rounded},
     {'label': 'Fisika', 'icon': Icons.bolt_rounded},
+    {'label': 'Grade', 'icon': Icons.grade_rounded},
   ];
 
   // Data modul per kategori — status: 'Mulai' atau 'Selesai'
@@ -221,6 +223,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildMainContent() {
+    if (_selectedSidebarIndex == 3) {
+      return const GradeScreen();
+    }
     final modules = _moduleData[_selectedSidebarIndex];
 
     return Container(
