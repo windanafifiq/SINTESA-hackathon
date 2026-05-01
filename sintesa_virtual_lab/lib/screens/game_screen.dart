@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/app_colors.dart';
 import '../models/game_state.dart';
 import '../models/solution.dart';
-import '../widgets/lab_widgets.dart';
+import '../widgets/lab_widgets.dart' hide SolutionState, Solution;
 import 'lab_report_flow_screen.dart';
 
 class GameScreen extends StatefulWidget {
@@ -15,24 +15,55 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
+  // ── Feedback toast ─────────────────────────────────────────────────────────
   late AnimationController _popupCtrl;
   late Animation<double> _popupScale;
-
   String? _feedbackMessage;
   bool _showFeedback = false;
   bool _feedbackSuccess = true;
-  
+
+  // ── Panels ─────────────────────────────────────────────────────────────────
   bool _isInventoryOpen = false;
   bool _isNotebookOpen = false;
+
+  // ── Per-flask stir animation controllers ───────────────────────────────────
+  // Key = solution id
+  final Map<String, AnimationController> _stirControllers = {};
+  final Map<String, Animation<double>> _stirAnims = {};
+
+  // ── Instruction state ──────────────────────────────────────────────────────
+  // Tracks which instruction to show based on game progress
+  _InstructionPhase get _instructionPhase {
+    final gs = widget.gameState;
+    if (gs.allGlassesDone) return _InstructionPhase.done;
+    if (gs.pendingStirCount > 0) return _InstructionPhase.stir;
+    return _InstructionPhase.pour;
+  }
 
   @override
   void initState() {
     super.initState();
+
     _popupCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _popupScale = CurvedAnimation(parent: _popupCtrl, curve: Curves.elasticOut);
+    _popupScale =
+        CurvedAnimation(parent: _popupCtrl, curve: Curves.elasticOut);
+
+    // Create a stir controller for each solution
+    for (final s in widget.gameState.solutions) {
+      final ctrl = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 600),
+      );
+      _stirControllers[s.id] = ctrl;
+      _stirAnims[s.id] =
+          Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: ctrl,
+        curve: Curves.easeInOut,
+      ));
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.gameState.goToPhase(GamePhase.step1_description);
@@ -42,8 +73,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _popupCtrl.dispose();
+    for (final c in _stirControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
+
+  // ── Feedback ───────────────────────────────────────────────────────────────
 
   void _showFeedbackMessage(String msg, bool success) {
     setState(() {
@@ -53,26 +89,57 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
     _popupCtrl.forward(from: 0);
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() => _showFeedback = false);
-      }
+      if (mounted) setState(() => _showFeedback = false);
     });
   }
+
+  // ── Stir action ────────────────────────────────────────────────────────────
+
+  Future<void> _onStirFlask(String solutionId) async {
+    final solution =
+        widget.gameState.solutions.firstWhere((s) => s.id == solutionId);
+
+    if (solution.state != SolutionState.kunyitAdded) {
+      if (solution.state == SolutionState.empty) {
+        _showFeedbackMessage('Tuangkan kunyit dulu!', false);
+      }
+      return;
+    }
+
+    // Play stir spin animation
+    final ctrl = _stirControllers[solutionId]!;
+    await ctrl.forward(from: 0);
+
+    // Update state → revealed
+    final success = widget.gameState.stirSolution(solutionId);
+    if (success) {
+      final s =
+          widget.gameState.solutions.firstWhere((s) => s.id == solutionId);
+      _showFeedbackMessage(
+        'Selesai diaduk! Amati perubahan warnanya.',
+        true,
+      );
+    }
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: widget.gameState,
-      builder: (context, child) {
+      builder: (context, _) {
         return Scaffold(
           body: LabBackground(
             child: Stack(
               children: [
                 _buildMainContent(),
-                
+
                 // HUD
                 Positioned(
-                  top: 0, left: 0, right: 0,
+                  top: 0,
+                  left: 0,
+                  right: 0,
                   child: _buildHUD(),
                 ),
 
@@ -82,7 +149,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 // Inventory
                 InventoryWidget(
                   isOpen: _isInventoryOpen,
-                  onToggle: () => setState(() => _isInventoryOpen = !_isInventoryOpen),
+                  onToggle: () =>
+                      setState(() => _isInventoryOpen = !_isInventoryOpen),
                 ),
 
                 // Notebook Sidebar
@@ -93,19 +161,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   bottom: 0,
                   right: _isNotebookOpen ? 0 : -300,
                   child: LabNotebook(
-                    solutions: widget.gameState.solutions,
+                    solutions: widget.gameState.solutions
+                        .map((s) => WidgetSolution.fromModel(s))
+                        .toList(),
                     onSave: (id, {color, type, note}) {
-                      widget.gameState.updateNotebook(id, color: color, type: type, note: note);
+                      widget.gameState.updateNotebook(id,
+                          color: color, type: type, note: note);
                     },
                   ),
                 ),
 
-                // Sidebar Toggle
-                Positioned(
+                // Notebook Toggle
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
                   right: _isNotebookOpen ? 300 : 0,
                   top: 100,
                   child: GestureDetector(
-                    onTap: () => setState(() => _isNotebookOpen = !_isNotebookOpen),
+                    onTap: () =>
+                        setState(() => _isNotebookOpen = !_isNotebookOpen),
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -114,10 +188,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           topLeft: Radius.circular(10),
                           bottomLeft: Radius.circular(10),
                         ),
-                        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 4)
+                        ],
                       ),
                       child: Icon(
-                        _isNotebookOpen ? Icons.chevron_right : Icons.edit_note,
+                        _isNotebookOpen
+                            ? Icons.chevron_right
+                            : Icons.edit_note,
                         color: Colors.white,
                       ),
                     ),
@@ -131,9 +209,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ── HUD ────────────────────────────────────────────────────────────────────
+
   Widget _buildHUD() {
     return Container(
-      padding: const EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 15),
+      padding:
+          const EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 15),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -143,15 +224,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       ),
       child: Row(
         children: [
-          // Mastery Badge
-          _hudStat(Icons.workspace_premium, AppColors.warning400, widget.gameState.masteryLevel),
+          _hudStat(Icons.workspace_premium, AppColors.warning400,
+              widget.gameState.masteryLevel),
           const Spacer(),
-          // Scores
-          _hudStat(Icons.security, AppColors.success400, 'Safety: ${widget.gameState.safetyScore}%'),
+          _hudStat(Icons.security, AppColors.success400,
+              'Safety: ${widget.gameState.safetyScore}%'),
           const SizedBox(width: 20),
-          _hudStat(Icons.precision_manufacturing, AppColors.info400, 'Prec: ${widget.gameState.precisionScore}%'),
+          _hudStat(Icons.precision_manufacturing, AppColors.info400,
+              'Prec: ${widget.gameState.precisionScore}%'),
           const SizedBox(width: 20),
-          _hudStat(Icons.star, AppColors.warning400, '${widget.gameState.score} pts'),
+          _hudStat(Icons.star, AppColors.warning400,
+              '${widget.gameState.score} pts'),
         ],
       ),
     );
@@ -162,24 +245,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       children: [
         Icon(icon, color: color, size: 18),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
-        ),
+        Text(label,
+            style: TextStyle(
+                color: color, fontSize: 12, fontWeight: FontWeight.bold)),
       ],
     );
   }
 
+  // ── Main content router ────────────────────────────────────────────────────
+
   Widget _buildMainContent() {
-    switch (widget.gameState.phase) {
-      case GamePhase.step1_description:
-        return _buildDescriptionStep();
-      case GamePhase.step3_experiment:
-        return _buildExperimentStep();
-      default:
-        return _buildDescriptionStep();
-    }
+    return switch (widget.gameState.phase) {
+      GamePhase.step1_description => _buildDescriptionStep(),
+      GamePhase.step3_experiment  => _buildExperimentStep(),
+      _                           => _buildDescriptionStep(),
+    };
   }
+
+  // ── Description step ───────────────────────────────────────────────────────
 
   Widget _buildDescriptionStep() {
     return Center(
@@ -198,26 +281,34 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             const SizedBox(height: 20),
             const Text(
               'Praktikum Indikator Asam-Basa',
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
             const Text(
-              'Gunakan ekstrak kunyit untuk menguji sifat larutan. Amati perubahan warna dan catat di Smart Lab-Notebook!',
+              'Gunakan ekstrak kunyit untuk menguji sifat larutan.\n'
+              '1. Tuangkan larutan kunyit ke setiap beker glass.\n'
+              '2. Aduk setiap gelas untuk melihat perubahan warna.\n'
+              '3. Catat hasil di Smart Lab-Notebook!',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.6),
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () => widget.gameState.goToPhase(GamePhase.step3_experiment),
+              onPressed: () =>
+                  widget.gameState.goToPhase(GamePhase.step3_experiment),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.info700,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
               ),
               child: const Text('Mulai Simulasi'),
             ),
             const SizedBox(height: 10),
             TextButton.icon(
-              onPressed: () => _showDemoVideo(),
+              onPressed: _showDemoVideo,
               icon: const Icon(Icons.play_circle_outline, size: 18),
               label: const Text('Lihat Video Prosedur'),
             ),
@@ -227,77 +318,189 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ── Experiment step ────────────────────────────────────────────────────────
+
   Widget _buildExperimentStep() {
     return Column(
       children: [
         const SizedBox(height: 120),
-        const InstructionBubble(
-          text: 'Buka inventory dan drag "Larutan Kunyit" ke gelas untuk memulai pengujian.',
-          icon: Icons.info_outline,
-        ),
+
+        // Dynamic instruction bubble
+        _buildInstructionBubble(),
+
+        // Flask row
         Expanded(
           child: Center(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: Row(
-                children: widget.gameState.solutions.map((s) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: DragTarget<String>(
-                      onAcceptWithDetails: (details) {
-                        if (details.data == 'kunyit') {
-                          final success = widget.gameState.addKunyitToSolution(s.id);
-                          if (success) {
-                            _showFeedbackMessage('Reaksi Kimia Berhasil!', true);
-                          }
-                        } else {
-                          _showFeedbackMessage('Gunakan larutan kunyit!', false);
-                          widget.gameState.penalizeSafety(5);
-                        }
-                      },
-                      builder: (context, candidate, rejected) {
-                        return FlaskWidget(
-                          solution: s,
-                          isDropTarget: candidate.isNotEmpty,
-                        );
-                      },
-                    ),
-                  );
-                }).toList(),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: widget.gameState.solutions
+                    .map((s) => WidgetSolution.fromModel(s)) // Ubah ke WidgetSolution
+                    .map<Widget>((ws) => _buildFlaskSlot(ws)) // Ubah jadi Widget secara eksplisit
+                    .toList(), // Jadikan list di akhir saja
               ),
             ),
           ),
         ),
-        const SizedBox(height: 150), // Space for inventory
-        if (widget.gameState.allGlassesDone)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 250),
-            child: ElevatedButton.icon(
-              onPressed: () => _generateReport(),
-              icon: const Icon(Icons.picture_as_pdf),
-              label: const Text('Generate Lab Report'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.success700),
-            ),
-          ),
+
+        // Space reserved for inventory panel
+        const SizedBox(height: 150),
+
+        // Generate report button — only visible when all flasks are done
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          child: widget.gameState.allGlassesDone
+              ? Padding(
+                  key: const ValueKey('reportBtn'),
+                  padding: const EdgeInsets.only(bottom: 170),
+                  child: ElevatedButton.icon(
+                    onPressed: _generateReport,
+                    icon: const Icon(Icons.picture_as_pdf),
+                    label: const Text('Generate Lab Report'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.success700,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 14),
+                    ),
+                  ),
+                )
+              : const SizedBox(key: ValueKey('empty'), height: 0),
+        ),
       ],
     );
   }
 
+  // ── Instruction bubble (dynamic) ───────────────────────────────────────────
+
+  Widget _buildInstructionBubble() {
+    final (text, icon) = switch (_instructionPhase) {
+      _InstructionPhase.pour => (
+          'Buka inventory dan drag "Larutan Kunyit" ke setiap beker glass.',
+          Icons.info_outline,
+        ),
+      _InstructionPhase.stir => (
+          'Bagus! Sekarang drag "Sendok Preparat" dari inventory ke setiap gelas untuk mengaduk.',
+          Icons.touch_app_outlined,
+        ),
+      _InstructionPhase.done => (
+          'Semua larutan sudah teramati! Tekan "Generate Lab Report" untuk melanjutkan.',
+          Icons.check_circle_outline,
+        ),
+    };
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: InstructionBubble(
+        key: ValueKey(_instructionPhase),
+        text: text,
+        icon: icon,
+      ),
+    );
+  }
+
+  // ── Single flask slot: DragTarget + stir button ────────────────────────────
+
+  Widget _buildFlaskSlot(WidgetSolution s) {
+    final stirAnim = _stirAnims[s.id]!;
+
+    print("🔍 CEK GELAS [${s.id}] -> State-nya saat ini adalah: ${s.state}");
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── DragTarget (tuang kunyit) ──────────────────────────────────
+          DragTarget<String>(
+            onWillAcceptWithDetails: (details) =>
+                (details.data == 'kunyit' && s.state == SolutionState.empty) ||
+                (details.data == 'sendok' && s.state == SolutionState.kunyitAdded),
+            onAcceptWithDetails: (details) {
+              print("💡 [DEBUG] Item '${details.data}' mendarat di atas gelas ${s.id}");
+              if (details.data == 'kunyit') {
+                final ok = widget.gameState.addKunyitToSolution(s.id);
+                if (ok) {
+                  _showFeedbackMessage(
+                      'Kunyit dituang ke ${s.name}! Sekarang aduk dengan sendok.', true);
+                }
+              } else if (details.data == 'sendok') {
+                _onStirFlask(s.id);
+              } else {
+                _showFeedbackMessage('Gunakan larutan kunyit!', false);
+                widget.gameState.penalizeSafety(5);
+              }
+            },
+            builder: (context, candidates, _) {
+              final isTarget =
+                  candidates.isNotEmpty && s.state == SolutionState.empty;
+
+              return AnimatedBuilder(
+                animation: stirAnim,
+                builder: (context, child) {
+                  // Shake/rotate effect while stirring
+                  final angle = s.state == SolutionState.kunyitAdded
+                      ? 0.0
+                      : stirAnim.value * 0.08 *
+                          (stirAnim.value < 0.5 ? 1 : -1);
+                  return Transform.rotate(
+                    angle: angle,
+                    child: child,
+                  );
+                },
+                child: FlaskWidget(
+                  solution: s,
+                  isDropTarget: isTarget,
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 8),
+
+          // ── Stir button (hanya muncul jika kunyit sudah dituang) ───────
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: s.state == SolutionState.revealed
+                    ? _RevealedBadge(
+                        key: ValueKey('done_${s.id}'),
+                        label: s.reactionColorName,
+                      )
+                    : const SizedBox(
+                        key: ValueKey('none'),
+                        height: 36,
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
   void _showDemoVideo() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         backgroundColor: Colors.black,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const AspectRatio(
-              aspectRatio: 16/9,
-              child: Center(child: Text('Video Dokumentasi Prosedur\n[Placeholder]', textAlign: TextAlign.center, style: TextStyle(color: Colors.white))),
+              aspectRatio: 16 / 9,
+              child: Center(
+                child: Text(
+                  'Video Dokumentasi Prosedur\n[Placeholder]',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
             ),
             const SizedBox(height: 10),
-            ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Tutup'))
+            ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tutup')),
           ],
         ),
       ),
@@ -305,11 +508,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _generateReport() {
-    // Navigate to results but with a "Report" styling
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => LabReportFlowScreen()),
+      MaterialPageRoute(builder: (_) => const LabReportFlowScreen()),
     );
   }
+
+  // ── Feedback toast ─────────────────────────────────────────────────────────
 
   Widget _buildFeedbackToast() {
     return Positioned(
@@ -320,19 +524,121 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         child: ScaleTransition(
           scale: _popupScale,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
-              color: _feedbackSuccess ? AppColors.success700 : AppColors.danger900,
+              color: _feedbackSuccess
+                  ? AppColors.success700
+                  : AppColors.danger900,
               borderRadius: BorderRadius.circular(30),
-              boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 10)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black45, blurRadius: 10)
+              ],
             ),
             child: Text(
               _feedbackMessage ?? '',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRIVATE HELPER WIDGETS
+// ═══════════════════════════════════════════════════════════════
+
+enum _InstructionPhase { pour, stir, done }
+
+// ── Stir button ────────────────────────────────────────────────────────────
+
+class _StirButton extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const _StirButton({super.key, required this.onTap});
+
+  @override
+  State<_StirButton> createState() => _StirButtonState();
+}
+
+class _StirButtonState extends State<_StirButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _rotCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+  }
+
+  @override
+  void dispose() {
+    _rotCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    await _rotCtrl.forward(from: 0);
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: RotationTransition(
+        turns: Tween(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(parent: _rotCtrl, curve: Curves.easeInOut),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.warning500.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('🥄', style: TextStyle(fontSize: 16)),
+              SizedBox(width: 4),
+              Text(
+                'Aduk',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Revealed badge ─────────────────────────────────────────────────────────
+
+class _RevealedBadge extends StatelessWidget {
+  final String label;
+
+  const _RevealedBadge({super.key, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.black45,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(Icons.check_circle, color: Colors.greenAccent, size: 16),
     );
   }
 }

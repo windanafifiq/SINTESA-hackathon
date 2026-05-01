@@ -53,7 +53,7 @@ class LabBackground extends StatelessWidget {
 
 /// A single flask widget using assets
 class FlaskWidget extends StatefulWidget {
-  final Solution solution;
+  final WidgetSolution solution;
   final bool isDropTarget;
   final VoidCallback? onTap;
   final double width;
@@ -131,7 +131,7 @@ class _FlaskWidgetState extends State<FlaskWidget>
                         : null,
                   ),
                   child: Image.asset(
-                    widget.solution.hasKunyit
+                    widget.solution.isRevealed
                         ? widget.solution.assetAfter
                         : widget.solution.assetBefore,
                     fit: BoxFit.contain,
@@ -312,7 +312,7 @@ class InventoryWidget extends StatelessWidget {
 
 /// Smart Lab-Notebook Widget
 class LabNotebook extends StatelessWidget {
-  final List<Solution> solutions;
+  final List<WidgetSolution> solutions;
   final Function(String, {String? color, String? type, String? note}) onSave;
 
   const LabNotebook({
@@ -364,7 +364,7 @@ class LabNotebook extends StatelessWidget {
     );
   }
 
-  Widget _buildNotebookEntry(BuildContext context, Solution s) {
+  Widget _buildNotebookEntry(BuildContext context, WidgetSolution s) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(10),
@@ -428,7 +428,7 @@ class LabNotebook extends StatelessWidget {
     );
   }
 
-  void _editField(BuildContext context, Solution s, String field) {
+  void _editField(BuildContext context, WidgetSolution s, String field) {
     final controller = TextEditingController(
       text: field == 'warna' ? s.observationColor : s.observationType,
     );
@@ -645,7 +645,7 @@ class InstructionBubble extends StatelessWidget {
 
 /// Animated result card for a solution
 class SolutionResultCard extends StatelessWidget {
-  final Solution solution;
+  final WidgetSolution solution;
   final int index;
 
   const SolutionResultCard({
@@ -759,3 +759,152 @@ class SolutionResultCard extends StatelessWidget {
     );
   }
 }
+
+
+// WidgetSolution mapping is now directly linked to the model's SolutionState
+
+// ── Solution model ───────────────────────────────────────────────────────────
+
+class WidgetSolution {
+  final String id;
+  final String name;
+  final double ph;
+  final SolutionState state;
+
+  // Observation notebook fields
+  final String? observationColor;
+  final String? observationType;
+  final String? observationNote;
+
+  const WidgetSolution({
+    required this.id,
+    required this.name,
+    required this.ph,
+    this.state = SolutionState.empty,
+    this.observationColor,
+    this.observationType,
+    this.observationNote,
+  });
+
+  factory WidgetSolution.fromModel(Solution model) {
+    return WidgetSolution(
+      id: model.id,
+      name: model.name,
+      ph: model.ph,
+      state: model.state,
+      observationColor: model.observationColor,
+      observationType: model.observationType,
+      observationNote: model.observationNote,
+    );
+  }
+
+  // ── State helpers ────────────────────────────────────────────────────────
+
+  /// True jika kunyit sudah dituang (belum tentu diaduk)
+  bool get hasKunyit =>
+      state == SolutionState.kunyitAdded ||
+      state == SolutionState.stirring ||
+      state == SolutionState.revealed;
+
+  bool get isRevealed => state == SolutionState.revealed;
+  bool get needsStirring => state == SolutionState.kunyitAdded;
+
+  // ── Asset paths ──────────────────────────────────────────────────────────
+  /// Asset sebelum kunyit dituang (larutan bening)
+  String get assetBefore => 'assets/images/${id}_before.png';
+
+  /// Asset setelah kunyit dituang dan diaduk (warna reaksi)
+  String get assetAfter => 'assets/images/${id}_after.png';
+
+  // ── Color getters ────────────────────────────────────────────────────────
+
+  /// Warna liquid saat ini untuk fallback CustomPaint (FlaskPainter)
+  Color get currentLiquidColor {
+    if (!hasKunyit) return const Color(0xFFB3D9FF); // bening sebelum kunyit
+    if (!isRevealed) return const Color(0xFFE8C94B).withOpacity(0.6); // kunyit belum bereaksi
+    return afterColor; // warna reaksi
+  }
+
+  /// Warna hasil reaksi setelah diaduk (berdasarkan pH)
+  /// - Asam kuat  (pH < 4)  : kuning cerah (warna asli kurkumin)
+  /// - Asam       (pH < 7)  : kuning
+  /// - Netral     (pH ≈ 7)  : kuning kecokelatan
+  /// - Basa       (pH < 11) : merah kecokelatan
+  /// - Basa kuat  (pH ≥ 11) : merah tua / cokelat gelap
+  Color get afterColor {
+    if (ph < 4)  return const Color(0xFFFFF176); // kuning cerah
+    if (ph < 7)  return const Color(0xFFFFD54F); // kuning
+    if (ph < 8)  return const Color(0xFFFFB300); // kuning kecokelatan
+    if (ph < 11) return const Color(0xFFBF360C); // merah kecokelatan
+    return const Color(0xFF7B1111);               // merah tua
+  }
+
+  /// Warna label asam/basa/netral untuk UI card
+  Color get typeColor {
+    if (ph < 7) return const Color(0xFF4E91FF);  // biru untuk asam
+    if (ph == 7) return const Color(0xFF4CAF50); // hijau untuk netral
+    return const Color(0xFFFF7043);              // oranye untuk basa
+  }
+
+  // ── Text getters ─────────────────────────────────────────────────────────
+
+  String get acidBaseLabel {
+    if (ph < 7) return 'Asam';
+    if (ph == 7) return 'Netral';
+    return 'Basa';
+  }
+
+  /// Label singkat untuk badge di result card
+  String get typeLabel => acidBaseLabel;
+
+  /// Nama warna reaksi dalam bahasa Indonesia
+  String get reactionColorName {
+    if (ph < 4)  return 'Kuning Cerah';
+    if (ph < 7)  return 'Kuning';
+    if (ph < 8)  return 'Kuning Kecokelatan';
+    if (ph < 11) return 'Merah Kecokelatan';
+    return 'Merah Tua';
+  }
+
+  /// Penjelasan singkat untuk result card
+  String get explanation {
+    if (ph < 4) {
+      return 'Larutan bersifat asam kuat (pH ${ph.toStringAsFixed(1)}). '
+          'Kurkumin dalam kunyit tetap berwarna kuning cerah pada suasana asam.';
+    }
+    if (ph < 7) {
+      return 'Larutan bersifat asam (pH ${ph.toStringAsFixed(1)}). '
+          'Indikator kunyit menunjukkan warna kuning khas.';
+    }
+    if (ph < 8) {
+      return 'Larutan bersifat netral (pH ${ph.toStringAsFixed(1)}). '
+          'Warna kunyit mulai bergeser ke kuning kecokelatan.';
+    }
+    if (ph < 11) {
+      return 'Larutan bersifat basa (pH ${ph.toStringAsFixed(1)}). '
+          'Kurkumin terdeprotonasi sehingga berubah menjadi merah kecokelatan.';
+    }
+    return 'Larutan bersifat basa kuat (pH ${ph.toStringAsFixed(1)}). '
+        'Reaksi kurkumin dengan basa kuat menghasilkan warna merah tua.';
+  }
+
+  // ── copyWith ─────────────────────────────────────────────────────────────
+
+  WidgetSolution copyWith({
+    SolutionState? state,
+    String? observationColor,
+    String? observationType,
+    String? observationNote,
+  }) {
+    return WidgetSolution(
+      id: id,
+      name: name,
+      ph: ph,
+      state: state ?? this.state,
+      observationColor: observationColor ?? this.observationColor,
+      observationType: observationType ?? this.observationType,
+      observationNote: observationNote ?? this.observationNote,
+    );
+  }
+}
+
