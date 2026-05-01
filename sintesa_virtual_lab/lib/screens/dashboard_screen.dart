@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-// import 'safety_procedure_screen.dart'; // Dihapus sementara agar tidak error
+import 'safety_procedure_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -333,16 +333,42 @@ class _DashboardScreenState extends State<DashboardScreen>
                         score: modules[index]['score'] as int?,
                         image: modules[index]['image'] as String?,
                         onTap: () {
-                          // TODO: Navigasi ke halaman praktikum
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Memulai praktikum...')),
-                          );
+                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                            );
+                          }
                         },
                         onRestart: () {
-                          // TODO: Reset modul / mulai ulang
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Mengulang praktikum...')),
-                          );
+                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                            );
+                          }
                         },
                       );
                     },
