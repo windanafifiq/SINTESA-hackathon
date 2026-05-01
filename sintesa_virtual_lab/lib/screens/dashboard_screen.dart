@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_colors.dart';
-// import 'safety_procedure_screen.dart'; // Dihapus sementara agar tidak error
+import '../services/auth_service.dart';
+import 'login_screen.dart';
+import 'safety_procedure_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -114,9 +117,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [AppColors.secondary, AppColors.secondaryDark],
                     ),
                   ),
@@ -125,25 +128,63 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
                 const SizedBox(width: 14),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Username',
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        FirebaseAuth.instance.currentUser?.displayName ??
+                            FirebaseAuth.instance.currentUser?.email??
+                            'Pengguna',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Siswa',
-                      style: TextStyle(
+                      Text(
+                        'Siswa',
+                        style: TextStyle(
+                          color: AppColors.primaryLighter.withOpacity(0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Tombol Logout
+                Tooltip(
+                  message: 'Keluar',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () async {
+                      await AuthService().signOut();
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, animation, __) => const LoginScreen(),
+                            transitionsBuilder: (_, animation, __, child) =>
+                                FadeTransition(opacity: animation, child: child),
+                            transitionDuration: const Duration(milliseconds: 400),
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.logout_rounded,
                         color: AppColors.primaryLighter.withOpacity(0.7),
-                        fontSize: 12,
+                        size: 18,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -333,16 +374,42 @@ class _DashboardScreenState extends State<DashboardScreen>
                         score: modules[index]['score'] as int?,
                         image: modules[index]['image'] as String?,
                         onTap: () {
-                          // TODO: Navigasi ke halaman praktikum
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Memulai praktikum...')),
-                          );
+                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                            );
+                          }
                         },
                         onRestart: () {
-                          // TODO: Reset modul / mulai ulang
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Mengulang praktikum...')),
-                          );
+                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                                transitionDuration: const Duration(milliseconds: 400),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                            );
+                          }
                         },
                       );
                     },
