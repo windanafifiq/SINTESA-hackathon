@@ -64,8 +64,8 @@ class FlaskWidget extends StatefulWidget {
     required this.solution,
     this.isDropTarget = false,
     this.onTap,
-    this.width = 95,
-    this.height = 125,
+    this.width = 120,
+    this.height = 160,
   });
 
   @override
@@ -146,17 +146,17 @@ class _FlaskWidgetState extends State<FlaskWidget>
                 const SizedBox(height: 4),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary900.withOpacity(0.85),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: Colors.white.withOpacity(0.1)),
                   ),
                   child: Text(
                     widget.solution.name,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

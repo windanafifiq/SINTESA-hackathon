@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/app_colors.dart';
 import '../models/lab_report_model.dart';
 import '../services/lab_report_generator_service.dart' hide AppStrings;
+import '../services/pdf_service.dart';
 import '../widgets/lab_reports_widgets.dart';
 import '../screens/dashboard_screen.dart';
 import 'quiz_screen.dart';
@@ -229,33 +230,20 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
   }
 
   void _downloadReport() {
-    // Simulation of PDF download
-    final content = _report.generatedReport ?? '';
-    final filename = 'Laporan_Praktikum_${DateTime.now().millisecondsSinceEpoch}.txt';
-    
-    // In a real app we'd use 'pdf' package, but here we'll mock it with a snackbar or simple file blob if web
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.picture_as_pdf, color: Colors.white),
-            const SizedBox(width: 12),
-            Text('Mengunduh $filename...'),
-          ],
+    PdfService.generateAndDownloadPdf(_report).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PDF berhasil dibuat!'),
+          backgroundColor: AppColors.success700,
         ),
-        backgroundColor: AppColors.primary800,
-      ),
-    );
-    
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Laporan PDF berhasil disimpan!'),
-            backgroundColor: AppColors.success700,
-          ),
-        );
-      }
+      );
+    }).catchError((e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal membuat PDF. Coba lagi.'),
+          backgroundColor: AppColors.danger500,
+        ),
+      );
     });
   }
 

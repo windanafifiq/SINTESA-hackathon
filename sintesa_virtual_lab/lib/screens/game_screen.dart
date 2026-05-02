@@ -385,7 +385,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Widget _buildExperimentStep() {
     return Column(
       children: [
-        const SizedBox(height: 120),
+        const SizedBox(height: 80),
 
         // Dynamic instruction bubble
         _buildInstructionBubble(),
@@ -423,8 +423,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ),
         ),
         
-        // Space reserved for inventory panel
-        const SizedBox(height: 100),
+        // Space reserved for inventory panel - Reduced to prevent clipping
+        const SizedBox(height: 40),
       ],
     );
   }
