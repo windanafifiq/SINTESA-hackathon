@@ -30,13 +30,17 @@ class ModuleProgress {
     try {
       reset(); // Start with clean state
       final snapshot = await ScoreService().getAttempts().first;
+      // Dokumen sudah diurutkan descending (terbaru duluan).
+      // Tandai modul yang sudah di-set agar tidak ditimpa oleh attempt lama.
+      final Set<String> alreadySet = {};
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final title = data['moduleName'] as String?;
         final totalScore = data['totalScore'] as int?;
-        if (title != null && status.containsKey(title)) {
-          // Hanya set Selesai jika skor benar-benar ada
+        if (title != null && status.containsKey(title) && !alreadySet.contains(title)) {
+          // Ambil hanya attempt pertama (terbaru) per modul
           status[title] = {'status': 'Selesai', 'score': totalScore};
+          alreadySet.add(title);
         }
       }
     } catch (e) {
