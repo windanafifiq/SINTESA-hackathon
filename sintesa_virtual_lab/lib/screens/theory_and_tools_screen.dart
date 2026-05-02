@@ -141,7 +141,7 @@ class _TheoryAndToolsScreenState extends State<TheoryAndToolsScreen>
                           _buildTheoryParagraph('Setelah kegiatan pembelajaran ini diharapkan dapat memprediksi pH larutan asam atau basa berdasarkan indikator asam basa.'),
                           const SizedBox(height: 16),
                           _buildTheoryTitle('B. Uraian Materi'),
-                          _buildTheoryParagraph('Indikator asam basa adalah senyawa khusus yang ditambahkan pada larutan dengan tujuan mengetahui kisaran pH dari larutan tersebut. Indikator asam basa akan memberikan warna tertentu apabila direaksikan dengan larutan asam atau basa. Beberapa indikator terbuat dari bahan alami, akan tetapi ada juga beberapa indikator yang dibuat secara sintesis di laboratorium.'),
+                          _buildTheoryParagraph('Indikator asam basa adalah senyawa khusus yang ditambahkan pada larutan dengan tujuan mengetahui kisaran pH dari larutan tersebut. Indikator asam basa akan memberikan warna tertentu apabila direaksikan with larutan asam atau basa. Beberapa indikator terbuat dari bahan alami, akan tetapi ada juga beberapa indikator yang dibuat secara sintesis di laboratorium.'),
                           const SizedBox(height: 12),
                           _buildTheorySubtitle('1. Indikator Alami'),
                           _buildTheoryParagraph('Tanaman yang dapat dijadikan sebagai indikator adalah tanaman yang mempunyai warna terang contohnya: kol ungu, kulit manggis, bunga sepatu, bunga bougenvil, pacar air dan kunyit. Dapat atau tidaknya suatu tanaman dijadikan sebagai indikator alami adalah terjadinya perubahan warna apabila ekstraknya diteteskan pada larutan asam atau basa.'),
@@ -394,7 +394,6 @@ class _ToolCardState extends State<_ToolCard> {
   }
 }
 
-// Tombol Mulai Praktikum bergaya premium
 class _StartButton extends StatefulWidget {
   @override
   State<_StartButton> createState() => _StartButtonState();
@@ -463,7 +462,6 @@ class _StartButtonState extends State<_StartButton> {
   }
 }
 
-// Tombol Navigasi yang sama seperti di halaman sebelumnya
 class _NavButton extends StatefulWidget {
   final String label;
   final VoidCallback onTap;

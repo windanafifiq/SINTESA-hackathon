@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import 'dashboard_screen.dart';
+import 'login_screen.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -229,7 +229,7 @@ class _MulaiButtonState extends State<_MulaiButton> {
               Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (_, animation, __) => const DashboardScreen(),
+                  pageBuilder: (_, animation, __) => const LoginScreen(),
                   transitionsBuilder: (_, animation, __, child) => FadeTransition(
                     opacity: animation,
                     child: child,

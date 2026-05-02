@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "417544840886",
+    "project_id": "sintesa-lab-virtual",
+    "storage_bucket": "sintesa-lab-virtual.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417544840886:android:4fdfc622dfad7bbad1a817",
+        "android_client_info": {
+          "package_name": "com.example.sintesa_virtual_lab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-SVy25YG0rC1MLFumBmPd6SWluU6__2M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
