@@ -8,8 +8,10 @@ class ScoreService {
   Future<void> saveAttempt({
     required String moduleId,
     required String moduleName,
-    required int labScore,
+    required int practicumScore,
+    required int reportScore,
     required int quizScore,
+    required int totalScore,
   }) async {
     final user = _auth.currentUser;
     if (user == null) return;
@@ -21,9 +23,10 @@ class ScoreService {
         .add({
       'moduleId': moduleId,
       'moduleName': moduleName,
-      'labScore': labScore,
+      'practicumScore': practicumScore,
+      'reportScore': reportScore,
       'quizScore': quizScore,
-      'totalScore': (labScore + quizScore) ~/ 2,
+      'totalScore': totalScore,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }

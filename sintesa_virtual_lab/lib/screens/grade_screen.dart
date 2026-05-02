@@ -113,7 +113,8 @@ class _AttemptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labScore = data['labScore'] ?? 0;
+    final practicumScore = data['practicumScore'] ?? data['labScore'] ?? 0;
+    final reportScore = data['reportScore'] ?? 0;
     final quizScore = data['quizScore'] ?? 0;
     final totalScore = data['totalScore'] ?? 0;
 
@@ -189,12 +190,17 @@ class _AttemptCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          _buildDetailScore('Praktikum', labScore, AppColors.secondary),
-                          const SizedBox(width: 24),
-                          _buildDetailScore('Kuis', quizScore, AppColors.success),
-                        ],
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildDetailScore('Praktikum', practicumScore, AppColors.secondary),
+                            const SizedBox(width: 20),
+                            _buildDetailScore('Laporan', reportScore, AppColors.info),
+                            const SizedBox(width: 20),
+                            _buildDetailScore('Kuis', quizScore, AppColors.success),
+                          ],
+                        ),
                       ),
                     ],
                   ),

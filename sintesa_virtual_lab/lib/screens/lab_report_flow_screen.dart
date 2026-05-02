@@ -19,7 +19,17 @@ enum LabStep { form, video, completion, result }
 
 class LabReportFlowScreen extends StatefulWidget {
   final int labScore;
-  const LabReportFlowScreen({super.key, this.labScore = 0});
+  final int completionScore;
+  final int notebookScore;
+  final List<dynamic>? notebookData; // To allow sneak peek
+  
+  const LabReportFlowScreen({
+    super.key, 
+    this.labScore = 0,
+    this.completionScore = 0,
+    this.notebookScore = 0,
+    this.notebookData,
+  });
 
   @override
   State<LabReportFlowScreen> createState() => _LabReportFlowScreenState();
@@ -182,12 +192,28 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
 
   void _onSelanjutnyaCompletion() {
     if (_generatedReport == null) return;
+    
+    // Calculate report score based on form fullness
+    int reportScore = 0;
+    if (_asamCtrl.text.length > 10) reportScore += 25;
+    if (_basaCtrl.text.length > 10) reportScore += 25;
+    if (_netralCtrl.text.length > 5) reportScore += 25;
+    if (_kesimpulanCtrl.text.length > 20) reportScore += 25;
+
     _report = _report.copyWith(
       isBadgeEarned: true,
       generatedReport: _generatedReport,
     );
+    
+    // Pass everything to result state or just keep in state
+    setState(() {
+      _finalReportScore = reportScore;
+    });
+    
     _goTo(LabStep.result);
   }
+
+  int _finalReportScore = 0;
 
   // ── Result logic ───────────────────────────────────────────
 
@@ -199,6 +225,85 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
         backgroundColor: AppColors.success700,
         duration: Duration(seconds: 2),
       ),
+    );
+  }
+
+  void _downloadReport() {
+    // Simulation of PDF download
+    final content = _report.generatedReport ?? '';
+    final filename = 'Laporan_Praktikum_${DateTime.now().millisecondsSinceEpoch}.txt';
+    
+    // In a real app we'd use 'pdf' package, but here we'll mock it with a snackbar or simple file blob if web
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.picture_as_pdf, color: Colors.white),
+            const SizedBox(width: 12),
+            Text('Mengunduh $filename...'),
+          ],
+        ),
+        backgroundColor: AppColors.primary800,
+      ),
+    );
+    
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Laporan PDF berhasil disimpan!'),
+            backgroundColor: AppColors.success700,
+          ),
+        );
+      }
+    });
+  }
+
+  void _showSneakPeek() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.primary900,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Catatan Notebook Anda',
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white54),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (widget.notebookData == null || widget.notebookData!.isEmpty)
+                const Text('Belum ada catatan.', style: TextStyle(color: Colors.white70))
+              else
+                ...widget.notebookData!.map((s) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      '• ${s.name}: ${s.observationType ?? "?"} (${s.observationNote ?? "?"})',
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  );
+                }).toList(),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -241,6 +346,15 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
     return Scaffold(
       backgroundColor: AppColors.neutral100,
       appBar: _buildAppBar(),
+      floatingActionButton: _currentStep == LabStep.form 
+        ? FloatingActionButton.extended(
+            onPressed: _showSneakPeek,
+            backgroundColor: AppColors.warning500,
+            icon: const Icon(Icons.menu_book, color: AppColors.primary900),
+            label: const Text('Lihat Notebook', style: TextStyle(color: AppColors.primary900, fontWeight: FontWeight.bold)),
+          )
+        : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       body: SafeArea(
         child: FadeTransition(
           opacity: _pageFadeAnim,
@@ -789,21 +903,28 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
 
                 const SizedBox(height: 20),
 
-                // Download button
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: _copyReport,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary800.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.download_rounded,
-                          color: AppColors.primary800, size: 20),
+                // Download & Copy buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton.icon(
+                      onPressed: _copyReport,
+                      icon: const Icon(Icons.copy_rounded, size: 16),
+                      label: const Text('Salin', style: TextStyle(fontSize: 12)),
+                      style: TextButton.styleFrom(foregroundColor: AppColors.primary800),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: _downloadReport,
+                      icon: const Icon(Icons.picture_as_pdf_rounded, size: 16),
+                      label: const Text('Unduh PDF', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary800,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -818,7 +939,14 @@ class _LabReportFlowScreenState extends State<LabReportFlowScreen>
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => QuizScreen(labScore: widget.labScore)),
+                  MaterialPageRoute(
+                    builder: (context) => QuizScreen(
+                      labScore: widget.labScore,
+                      completionScore: widget.completionScore,
+                      notebookScore: widget.notebookScore,
+                      reportScore: _finalReportScore,
+                    ),
+                  ),
                 );
               },
             ),

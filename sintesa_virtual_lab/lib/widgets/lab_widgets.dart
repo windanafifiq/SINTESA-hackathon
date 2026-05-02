@@ -64,8 +64,8 @@ class FlaskWidget extends StatefulWidget {
     required this.solution,
     this.isDropTarget = false,
     this.onTap,
-    this.width = 90,
-    this.height = 120,
+    this.width = 95,
+    this.height = 125,
   });
 
   @override
@@ -184,77 +184,117 @@ class InventoryWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOutBack,
-      bottom: isOpen ? 0 : -220,
-      left: 0,
-      right: 0,
-      child: Column(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+      left: isOpen ? 0 : -240, // -240 agar tombol tab (40px) tetap kelihatan
+      top: 100,
+      bottom: 100,
+      child: Row(
         children: [
-          // Toggle button
+          // Content
+          Container(
+            width: 240,
+            decoration: BoxDecoration(
+              color: AppColors.primary900.withOpacity(0.95),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+              border: Border.all(color: AppColors.primary700, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 20,
+                  offset: const Offset(5, 0),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary800,
+                    borderRadius: const BorderRadius.only(topRight: Radius.circular(22)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.backpack, color: AppColors.warning400, size: 20),
+                      SizedBox(width: 10),
+                      Text(
+                        'INVENTORY',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    padding: const EdgeInsets.all(15),
+                    mainAxisSpacing: 15,
+                    crossAxisSpacing: 15,
+                    children: [
+                      _buildInventoryItem(
+                        'Kunyit',
+                        'assets/images/Larutan Kunyit.png',
+                        'kunyit',
+                      ),
+                      _buildInventoryItem(
+                        'Sendok',
+                        'assets/images/sendok preparat.png',
+                        'sendok',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Toggle button (Vertical)
           GestureDetector(
             onTap: onToggle,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              width: 40,
+              height: 120,
               decoration: BoxDecoration(
-                color: AppColors.primary900,
+                color: AppColors.primary800,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+                  topRight: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
                 ),
-                border: Border.all(color: AppColors.primary700),
+                border: Border(
+                  top: BorderSide(color: AppColors.primary700, width: 2),
+                  right: BorderSide(color: AppColors.primary700, width: 2),
+                  bottom: BorderSide(color: AppColors.primary700, width: 2),
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isOpen ? Icons.keyboard_arrow_down : Icons.backpack,
+                    isOpen ? Icons.chevron_left : Icons.backpack,
                     color: Colors.white,
-                    size: 18,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    isOpen ? 'Tutup Inventory' : 'Buka Inventory',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 8),
+                  const RotatedBox(
+                    quarterTurns: 1,
+                    child: Text(
+                      'INVENTORY',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-          // Content
-          Container(
-            height: 220,
-            decoration: BoxDecoration(
-              image: const DecorationImage(
-                image: AssetImage('assets/images/Inventory.png'),
-                fit: BoxFit.cover,
-              ),
-              color: AppColors.primary900,
-              border: Border(top: BorderSide(color: AppColors.primary700)),
-            ),
-            child: Center(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    _buildInventoryItem(
-                      'Larutan Kunyit',
-                      'assets/images/Larutan Kunyit.png',
-                      'kunyit',
-                    ),
-                    const SizedBox(width: 20),
-                    _buildInventoryItem(
-                      'Sendok Preparat',
-                      'assets/images/sendok preparat.png',
-                      'sendok',
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
@@ -283,29 +323,50 @@ class InventoryWidget extends StatelessWidget {
   }
 
   Widget _itemBox(String label, String asset) {
-    return Column(
-      children: [
-        Container(
-          width: 100,
-          height: 120,
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withOpacity(0.02),
+            blurRadius: 5,
+            spreadRadius: 1,
           ),
-          child: Image.asset(asset, fit: BoxFit.contain),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Image.asset(asset, fit: BoxFit.contain),
+            ),
           ),
-        ),
-      ],
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10),
+              ),
+            ),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -314,49 +375,122 @@ class InventoryWidget extends StatelessWidget {
 class LabNotebook extends StatelessWidget {
   final List<WidgetSolution> solutions;
   final Function(String, {String? color, String? type, String? note}) onSave;
+  final bool isOpen;
+  final VoidCallback onToggle;
 
   const LabNotebook({
     super.key,
     required this.solutions,
     required this.onSave,
+    required this.isOpen,
+    required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 300,
-      decoration: BoxDecoration(
-        color: AppColors.primary900.withOpacity(0.95),
-        border: Border(left: BorderSide(color: AppColors.primary700, width: 2)),
-      ),
-      child: Column(
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+      right: isOpen ? 0 : -240, // Match inventory logic but from right
+      top: 100,
+      bottom: 100,
+      child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: AppColors.primary800,
-            child: const Row(
-              children: [
-                Icon(Icons.edit_note, color: AppColors.info500),
-                SizedBox(width: 8),
-                Text(
-                  'Smart Lab-Notebook',
-                  style: TextStyle(
+          // Toggle button (Vertical)
+          GestureDetector(
+            onTap: onToggle,
+            child: Container(
+              width: 40,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.primary800,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+                border: Border(
+                  top: BorderSide(color: AppColors.primary700, width: 2),
+                  left: BorderSide(color: AppColors.primary700, width: 2),
+                  bottom: BorderSide(color: AppColors.primary700, width: 2),
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isOpen ? Icons.chevron_right : Icons.edit_note,
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
                   ),
+                  const SizedBox(height: 8),
+                  const RotatedBox(
+                    quarterTurns: 3,
+                    child: Text(
+                      'NOTEBOOK',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Content
+          Container(
+            width: 240,
+            decoration: BoxDecoration(
+              color: AppColors.primary900.withOpacity(0.95),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(0),
+                bottomRight: Radius.circular(0),
+              ),
+              border: Border.all(color: AppColors.primary700, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 20,
+                  offset: const Offset(-5, 0),
                 ),
               ],
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: solutions.length,
-              itemBuilder: (context, index) {
-                final s = solutions[index];
-                return _buildNotebookEntry(context, s);
-              },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary800,
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.auto_stories, color: AppColors.info400, size: 20),
+                      SizedBox(width: 10),
+                      Text(
+                        'OBSERVASI',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(15),
+                    itemCount: solutions.length,
+                    itemBuilder: (context, index) {
+                      final s = solutions[index];
+                      return _buildNotebookEntry(context, s);
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -366,11 +500,11 @@ class LabNotebook extends StatelessWidget {
 
   Widget _buildNotebookEntry(BuildContext context, WidgetSolution s) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: s.hasKunyit ? AppColors.info500.withOpacity(0.3) : Colors.white10,
         ),
@@ -381,20 +515,23 @@ class LabNotebook extends StatelessWidget {
           Text(
             s.name,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.info400,
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           if (!s.hasKunyit)
             const Text(
               'Lakukan pengamatan dulu...',
               style: TextStyle(color: Colors.white54, fontSize: 10),
             )
           else ...[
-            _notebookRow('Warna:', s.observationColor ?? '-', () => _editField(context, s, 'warna')),
-            _notebookRow('Sifat:', s.observationType ?? '-', () => _editField(context, s, 'sifat')),
+            _notebookRow('Sifat:', s.observationType ?? 'Pilih...', 
+                () => _showPicker(context, s, 'sifat', ['Asam', 'Basa', 'Netral'])),
+            const SizedBox(height: 8),
+            _notebookRow('Reaksi:', s.observationNote ?? 'Pilih...', 
+                () => _showPicker(context, s, 'reaksi', ['Tidak Bereaksi', 'Merah Kecokelatan'])),
           ],
         ],
       ),
@@ -402,25 +539,22 @@ class LabNotebook extends StatelessWidget {
   }
 
   Widget _notebookRow(String label, String value, VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return InkWell(
+      onTap: onTap,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
-          GestureDetector(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.info900.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: AppColors.info500.withOpacity(0.3)),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
               ),
-              child: Text(
-                value,
-                style: const TextStyle(color: AppColors.info500, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -428,41 +562,38 @@ class LabNotebook extends StatelessWidget {
     );
   }
 
-  void _editField(BuildContext context, WidgetSolution s, String field) {
-    final controller = TextEditingController(
-      text: field == 'warna' ? s.observationColor : s.observationType,
-    );
+  void _showPicker(BuildContext context, WidgetSolution s, String field, List<String> options) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.primary900,
-        title: Text('Input Data ${s.name}', style: const TextStyle(color: Colors.white, fontSize: 16)),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Data Pengamatan ($field)',
-            labelStyle: const TextStyle(color: Colors.white54),
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-          ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Data ${s.name}',
+            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((opt) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (field == 'sifat') {
+                    onSave(s.id, type: opt);
+                  } else {
+                    onSave(s.id, note: opt);
+                  }
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary800,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                child: Text(opt, style: const TextStyle(fontSize: 12)),
+              ),
+            );
+          }).toList(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (field == 'warna') {
-                onSave(s.id, color: controller.text);
-              } else {
-                onSave(s.id, type: controller.text);
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
       ),
     );
   }

@@ -15,6 +15,8 @@ class GameState extends ChangeNotifier {
   GamePhase _phase = GamePhase.intro;
   List<Solution> _solutions = SolutionData.getAllSolutions().toList();
   int _score = 0;
+  int _completionScore = 0;
+  int _notebookScore = 0;
   int _safetyScore = 100;
   int _precisionScore = 100;
   final Set<String> _badges = {};
@@ -24,6 +26,8 @@ class GameState extends ChangeNotifier {
   GamePhase get phase => _phase;
   List<Solution> get solutions => _solutions;
   int get score => _score;
+  int get completionScore => _completionScore;
+  int get notebookScore => _notebookScore;
   int get safetyScore => _safetyScore;
   int get precisionScore => _precisionScore;
   Set<String> get badges => _badges;
@@ -69,7 +73,8 @@ class GameState extends ChangeNotifier {
 
     _solutions[idx] = _solutions[idx].copyWith(state: SolutionState.kunyitAdded);
 
-    _score += 5; // poin kecil untuk setiap tuangan
+    _completionScore += 5; // Pouring point
+    _score += 5; 
     notifyListeners();
     print("💡 [DEBUG GameState] State sebelum: ${_solutions[idx].state}");
     
@@ -90,6 +95,7 @@ class GameState extends ChangeNotifier {
     // Fase stirring (animasi dihandle di UI, state langsung ke revealed)
     _solutions[idx] = _solutions[idx].copyWith(state: SolutionState.revealed);
 
+    _completionScore += 15; // Stirring point
     _score += 15;
     _precisionScore = (_precisionScore + 3).clamp(0, 100);
 
@@ -117,12 +123,45 @@ class GameState extends ChangeNotifier {
   }) {
     final idx = _solutions.indexWhere((s) => s.id == solutionId);
     if (idx < 0) return;
-    _solutions[idx] = _solutions[idx].copyWith(
+    
+    final solution = _solutions[idx];
+    int bonus = 0;
+    int penalty = 0;
+
+    // 1. Validasi Sifat (Type)
+    if (type != null) {
+      if (type == solution.acidBaseLabel) {
+        bonus += 10;
+        _notebookScore += 10;
+      } else {
+        penalty += 5;
+        _precisionScore = (_precisionScore - 5).clamp(0, 100);
+      }
+    }
+
+    // 2. Validasi Reaksi (Note)
+    if (note != null) {
+      bool isCorrectReaction = false;
+      if (note == 'Tidak Bereaksi' && solution.ph < 8) isCorrectReaction = true;
+      if (note == 'Merah Kecokelatan' && solution.ph >= 8) isCorrectReaction = true;
+
+      if (isCorrectReaction) {
+        bonus += 10;
+        _notebookScore += 10;
+      } else {
+        penalty += 5;
+        _precisionScore = (_precisionScore - 5).clamp(0, 100);
+      }
+    }
+
+    _score = (_score + bonus - penalty).clamp(0, 9999);
+
+    _solutions[idx] = solution.copyWith(
       observationColor: color,
       observationType: type,
       observationNote: note,
     );
-    _score += 10;
+    
     notifyListeners();
   }
 
@@ -140,6 +179,8 @@ class GameState extends ChangeNotifier {
     _phase = GamePhase.intro;
     _solutions = SolutionData.getAllSolutions().toList();
     _score = 0;
+    _completionScore = 0;
+    _notebookScore = 0;
     _safetyScore = 100;
     _precisionScore = 100;
     _badges.clear();

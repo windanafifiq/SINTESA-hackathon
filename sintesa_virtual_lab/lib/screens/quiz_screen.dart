@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import '../models/app_colors.dart';
+import '../models/module_state.dart';
 import '../services/score_service.dart';
 import 'dashboard_screen.dart';
 
 class QuizScreen extends StatefulWidget {
   final int labScore;
-  const QuizScreen({super.key, this.labScore = 0});
+  final int completionScore;
+  final int notebookScore;
+  final int reportScore;
+
+  const QuizScreen({
+    super.key, 
+    this.labScore = 0,
+    this.completionScore = 0,
+    this.notebookScore = 0,
+    this.reportScore = 0,
+  });
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -58,12 +69,39 @@ class _QuizScreenState extends State<QuizScreen> {
 
   Future<void> _backToHome() async {
     setState(() => _isSaving = true);
+    
+    // Weighted scoring calculation (Last Request):
+    // 50% Completion (max 140)
+    // 30% Notebook (max 140) + Report (max 100)
+    // 20% Quiz (max 100)
+    
+    final completionPct = (widget.completionScore / 140) * 50;
+    
+    // Combine Notebook (15%) and Report (15%) for total 30%
+    final notebookPct = (widget.notebookScore / 140) * 15;
+    final reportPct = (widget.reportScore / 100) * 15;
+    
+    final quizPct = (_score / 100) * 20;
+    
+    final finalScore = (completionPct + notebookPct + reportPct + quizPct).round();
+
     try {
+      // Update Local State
+      ModuleProgress.complete(ModuleTitles.asamBasa, finalScore);
+      
+      // Calculate display percentages for historical view
+      final pScore = (widget.completionScore / 140 * 100).round();
+      // Combined Laporan score (Notebook + Form)
+      final rScore = ((widget.notebookScore / 140 * 50) + (widget.reportScore / 100 * 50)).round();
+      final qScore = _score;
+
       await ScoreService().saveAttempt(
         moduleId: 'asam_basa_alami',
-        moduleName: 'Asam Basa Alami',
-        labScore: widget.labScore,
-        quizScore: _score,
+        moduleName: ModuleTitles.asamBasa,
+        practicumScore: pScore,
+        reportScore: rScore,
+        quizScore: qScore,
+        totalScore: finalScore,
       );
     } catch (e) {
       debugPrint('Error saving score: $e');
@@ -243,54 +281,34 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
           const SizedBox(height: 12),
+          // Final Score
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.primary800,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'SKOR AKHIR',
+                  style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
+                ),
+                Text(
+                  '${((widget.completionScore / 140 * 50) + (widget.notebookScore / 140 * 15) + (widget.reportScore / 100 * 15) + (_score / 100 * 20)).round()}',
+                  style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Column(
-                children: [
-                  const Text(
-                    'Nilai Praktikum:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.neutral600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${widget.labScore}',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.primary700,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                width: 1,
-                height: 60,
-                color: AppColors.neutral100,
-              ),
-              Column(
-                children: [
-                  const Text(
-                    'Nilai Kuis:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.neutral600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$_score',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.success700,
-                    ),
-                  ),
-                ],
-              ),
+              _scoreItem('Praktikum', '${(widget.completionScore / 140 * 100).round()}%', AppColors.primary700),
+              // Laporan = (Notebook Accuracy 50% + Report Completeness 50%)
+              _scoreItem('Laporan', '${((widget.notebookScore / 140 * 50) + (widget.reportScore / 100 * 50)).round()}%', AppColors.info700),
+              _scoreItem('Kuis', '$_score%', AppColors.success700),
             ],
           ),
           const SizedBox(height: 48),
@@ -324,6 +342,22 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _scoreItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.neutral600),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+        ),
+      ],
     );
   }
 }

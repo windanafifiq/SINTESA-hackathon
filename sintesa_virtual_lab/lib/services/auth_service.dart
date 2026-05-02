@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/module_state.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -50,6 +51,7 @@ class AuthService {
 
   // Logout
   Future<void> signOut() async {
+    ModuleProgress.reset();
     await _auth.signOut();
   }
 

@@ -6,6 +6,8 @@ import '../widgets/lab_widgets.dart';
 import '../painters/lab_painters.dart';
 import 'dashboard_screen.dart';
 import 'game_screen.dart';
+import '../models/module_state.dart';
+import '../services/score_service.dart';
 
 
 class ResultScreen extends StatefulWidget {
@@ -55,6 +57,16 @@ class _ResultScreenState extends State<ResultScreen>
       _quizScore = score;
       _quizCompleted = true;
     });
+    // Simpan progres ke Dashboard agar status berubah jadi Selesai
+    ModuleProgress.complete(ModuleTitles.asamBasa, (score / widget.gameState.solutions.length * 100).round());
+    
+    // Simpan ke Firestore untuk riwayat nilai
+    ScoreService().saveAttempt(
+      moduleId: 'asam_basa_alami',
+      moduleName: ModuleTitles.asamBasa,
+      labScore: widget.gameState.score.clamp(0, 100), // Asumsi skor max lab
+      quizScore: (score / widget.gameState.solutions.length * 100).round(),
+    );
   }
 
   @override

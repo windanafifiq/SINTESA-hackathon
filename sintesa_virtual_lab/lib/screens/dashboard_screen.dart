@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'safety_procedure_screen.dart';
 import 'grade_screen.dart';
+import '../models/module_state.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -26,27 +27,38 @@ class _DashboardScreenState extends State<DashboardScreen>
     {'label': 'Grade', 'icon': Icons.grade_rounded},
   ];
 
-  // Data modul per kategori — status: 'Mulai' atau 'Selesai'
-  final List<List<Map<String, dynamic>>> _moduleData = [
-    // Kimia
-    [
-      {'title': 'Reaksi Redoks', 'status': 'Selesai', 'score': 88, 'image': 'assets/images/reaksi_redoks.jpg'},
-      {'title': 'Larutan Buffer', 'status': 'Mulai', 'score': null, 'image': 'assets/images/larutan_buffer.jpg'},
-      {'title': 'Asam Basa Alami', 'status': 'Mulai', 'score': null, 'image': 'assets/images/asam_basa_alami.jpg'},
-    ],
-    // Biologi
-    [
-      {'title': 'Osmosis & Difusi', 'status': 'Selesai', 'score': 95, 'image': 'assets/images/osmosis.jpg'},
-      {'title': 'Fotosintesis', 'status': 'Mulai', 'score': null, 'image': 'assets/images/fotosintesis.jpg'},
-      {'title': 'Respirasi Sel', 'status': 'Mulai', 'score': null, 'image': 'assets/images/respirasi_sel.jpg'},
-    ],
-    // Fisika
-    [
-      {'title': 'Gerak Parabola', 'status': 'Mulai', 'score': null, 'image': 'assets/images/gerak_parabola.jpg'},
-      {'title': 'Hukum Newton', 'status': 'Mulai', 'score': null, 'image': 'assets/images/newton.jpg'},
-      {'title': 'Listrik Dinamis', 'status': 'Mulai', 'score': null, 'image': 'assets/images/listrik_dinamis.jpg'},
-    ],
-  ];
+  // Data modul per kategori — status diambil dari ModuleProgress
+  List<Map<String, dynamic>> get _currentModules {
+    final List<List<Map<String, dynamic>>> categories = [
+      // Kimia
+      [
+        {'title': ModuleTitles.asamBasa, 'image': 'assets/images/asam_basa_alami.jpg'},
+        {'title': ModuleTitles.reaksiRedoks, 'image': 'assets/images/reaksi_redoks.jpg'},
+        {'title': ModuleTitles.larutanBuffer, 'image': 'assets/images/larutan_buffer.jpg'},
+      ],
+      // Biologi
+      [
+        {'title': 'Osmosis & Difusi', 'image': 'assets/images/osmosis.jpg'},
+        {'title': 'Fotosintesis', 'image': 'assets/images/fotosintesis.jpg'},
+        {'title': 'Respirasi Sel', 'image': 'assets/images/respirasi_sel.jpg'},
+      ],
+      // Fisika
+      [
+        {'title': 'Gerak Parabola', 'image': 'assets/images/gerak_parabola.jpg'},
+        {'title': 'Hukum Newton', 'image': 'assets/images/newton.jpg'},
+        {'title': 'Listrik Dinamis', 'image': 'assets/images/listrik_dinamis.jpg'},
+      ],
+    ];
+
+    return categories[_selectedSidebarIndex].map((m) {
+      final progress = ModuleProgress.status[m['title']] ?? {'status': 'Mulai', 'score': null};
+      return {
+        ...m,
+        'status': progress['status'],
+        'score': progress['score'],
+      };
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -57,6 +69,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _fadeController.forward();
+    
+    // Sinkronisasi dengan database
+    ModuleProgress.syncWithFirestore().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -226,7 +243,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (_selectedSidebarIndex == 3) {
       return const GradeScreen();
     }
-    final modules = _moduleData[_selectedSidebarIndex];
+    final modules = _currentModules;
 
     return Container(
       color: const Color(0xFFF0F4FF), // Biru sangat muda sebagai background
@@ -379,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         score: modules[index]['score'] as int?,
                         image: modules[index]['image'] as String?,
                         onTap: () {
-                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                          if (modules[index]['title'] == ModuleTitles.asamBasa) {
                             Navigator.push(
                               context,
                               PageRouteBuilder(
@@ -390,7 +407,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 ),
                                 transitionDuration: const Duration(milliseconds: 400),
                               ),
-                            );
+                            ).then((_) {
+                              setState(() {});
+                            }); 
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -399,26 +418,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                               ),
                             );
                           }
-                          if (modules[index]['title'] == 'Asam Basa Alami') {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
-                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                                transitionDuration: const Duration(milliseconds: 400),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Praktikum belum tersedia.')),
-                            );
-                          }
                         },
                         onRestart: () {
-                          if (modules[index]['title'] == 'Asam Basa Alami') {
+                          if (modules[index]['title'] == ModuleTitles.asamBasa) {
                             Navigator.push(
                               context,
                               PageRouteBuilder(
@@ -429,24 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 ),
                                 transitionDuration: const Duration(milliseconds: 400),
                               ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Praktikum belum tersedia.')),
-                            );
-                          }
-                          if (modules[index]['title'] == 'Asam Basa Alami') {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
-                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                                transitionDuration: const Duration(milliseconds: 400),
-                              ),
-                            );
+                            ).then((_) => setState(() {}));
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Praktikum belum tersedia.')),
