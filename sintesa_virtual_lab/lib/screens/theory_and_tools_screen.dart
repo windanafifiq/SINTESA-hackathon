@@ -16,15 +16,15 @@ class _TheoryAndToolsScreenState extends State<TheoryAndToolsScreen>
   late Animation<double> _fadeAnim;
 
   final List<Map<String, dynamic>> _tools = [
-    {'name': 'Gelas Plastik', 'qty': '8 buah', 'color': AppColors.info, 'image': 'images/gelas_plastik.jpg', 'func': 'Wadah untuk setiap larutan yang akan diuji dengan ekstrak kunyit.'},
-    {'name': 'Ekstrak Kunyit', 'qty': '1 ons', 'color': AppColors.warningOrange, 'image': 'images/kunyit.jpg', 'func': 'Bahan alami yang digunakan sebagai indikator untuk menguji sifat asam/basa.'},
-    {'name': 'Air Murni', 'qty': '50 mL', 'color': AppColors.infoLight, 'image': 'images/air_murni.jpg', 'func': 'Larutan netral sebagai kontrol pembanding dalam percobaan.'},
-    {'name': 'Air Selokan', 'qty': '50 mL', 'color': AppColors.neutral700, 'image': 'images/air_selokan.jpg', 'func': 'Sampel air lingkungan untuk diuji sifat keasamannya.'},
-    {'name': 'Air Garam', 'qty': '50 mL', 'color': AppColors.primaryLighter, 'image': 'images/air_garam.jpg', 'func': 'Larutan garam dapur untuk menguji sifat netral atau asinnya.'},
-    {'name': 'Obat Maag', 'qty': '1 tablet', 'color': AppColors.success, 'image': 'images/obat_maag.jpg', 'func': 'Bahan basa yang digunakan untuk menguji reaksi indikator pada basa.'},
-    {'name': 'Air Sabun', 'qty': '50 mL', 'color': AppColors.secondaryLight, 'image': 'images/air_sabun.jpg', 'func': 'Larutan sabun bersifat basa, digunakan sebagai sampel larutan basa.'},
-    {'name': 'Larutan Cuka', 'qty': '50 mL', 'color': AppColors.dangerLight, 'image': 'images/cuka.jpg', 'func': 'Larutan asam asetat yang digunakan sebagai sampel larutan asam.'},
-    {'name': 'Air Kapur', 'qty': '50 mL', 'color': AppColors.neutral800, 'image': 'images/air_kapur.jpg', 'func': 'Larutan basa kuat dari kalsium hidroksida untuk menguji reaksi basa.'},
+    {'name': 'Gelas Plastik', 'qty': '8 buah', 'color': AppColors.info, 'image': 'assets/images/gelas_plastik.jpg', 'func': 'Wadah untuk setiap larutan yang akan diuji dengan ekstrak kunyit.'},
+    {'name': 'Ekstrak Kunyit', 'qty': '1 ons', 'color': AppColors.warningOrange, 'image': 'assets/images/kunyit.jpg', 'func': 'Bahan alami yang digunakan sebagai indikator untuk menguji sifat asam/basa.'},
+    {'name': 'Air Murni', 'qty': '50 mL', 'color': AppColors.infoLight, 'image': 'assets/images/air_murni.jpg', 'func': 'Larutan netral sebagai kontrol pembanding dalam percobaan.'},
+    {'name': 'Air Selokan', 'qty': '50 mL', 'color': AppColors.neutral700, 'image': 'assets/images/air_selokan.jpg', 'func': 'Sampel air lingkungan untuk diuji sifat keasamannya.'},
+    {'name': 'Air Garam', 'qty': '50 mL', 'color': AppColors.primaryLighter, 'image': 'assets/images/air_garam.jpg', 'func': 'Larutan garam dapur untuk menguji sifat netral atau asinnya.'},
+    {'name': 'Obat Maag', 'qty': '1 tablet', 'color': AppColors.success, 'image': 'assets/images/obat_maag.jpg', 'func': 'Bahan basa yang digunakan untuk menguji reaksi indikator pada basa.'},
+    {'name': 'Air Sabun', 'qty': '50 mL', 'color': AppColors.secondaryLight, 'image': 'assets/images/air_sabun.jpg', 'func': 'Larutan sabun bersifat basa, digunakan sebagai sampel larutan basa.'},
+    {'name': 'Larutan Cuka', 'qty': '50 mL', 'color': AppColors.dangerLight, 'image': 'assets/images/cuka.jpg', 'func': 'Larutan asam asetat yang digunakan sebagai sampel larutan asam.'},
+    {'name': 'Air Kapur', 'qty': '50 mL', 'color': AppColors.neutral800, 'image': 'assets/images/air_kapur.jpg', 'func': 'Larutan basa kuat dari kalsium hidroksida untuk menguji reaksi basa.'},
   ];
 
   @override
