@@ -44,13 +44,20 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenH = MediaQuery.of(context).size.height;
+    final isShort = screenH < 500;
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4FF),
       body: Column(
         children: [
           // Header Bar
           Container(
-            padding: const EdgeInsets.fromLTRB(32, 40, 32, 28),
+            padding: EdgeInsets.fromLTRB(
+              isShort ? 16 : 32,
+              isShort ? 12 : 32,
+              isShort ? 16 : 32,
+              isShort ? 10 : 20,
+            ),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [AppColors.primary, Color(0xFF0B357B)],
@@ -71,32 +78,33 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
                 _NavButton(
                   label: '← Kembali',
                   onTap: () => Navigator.pop(context),
+                  isShort: isShort,
                 ),
-                const Expanded(
+                Expanded(
                   child: Column(
                     children: [
                       Text(
                         'PROSEDUR',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: isShort ? 14 : 20,
                           fontWeight: FontWeight.w900,
                           color: AppColors.white,
-                          letterSpacing: 4,
+                          letterSpacing: isShort ? 2 : 4,
                         ),
                       ),
                       Text(
                         'KESELAMATAN LAB',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: isShort ? 14 : 20,
                           fontWeight: FontWeight.w900,
                           color: AppColors.secondary,
-                          letterSpacing: 4,
+                          letterSpacing: isShort ? 2 : 4,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 120), // balancing spacer
+                SizedBox(width: isShort ? 80 : 110), // balancing spacer
               ],
             ),
           ),
@@ -106,16 +114,21 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
             child: FadeTransition(
               opacity: _fadeAnim,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
+                padding: EdgeInsets.fromLTRB(
+                  isShort ? 16 : 32,
+                  isShort ? 12 : 24,
+                  isShort ? 16 : 32,
+                  0,
+                ),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    int cols = constraints.maxWidth > 1000 ? 4 : (constraints.maxWidth > 700 ? 3 : 2);
+                    int cols = constraints.maxWidth > 1000 ? 4 : (constraints.maxWidth > 700 ? 3 : (constraints.maxWidth > 500 ? 4 : 2));
                     return GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: cols,
-                        crossAxisSpacing: 20,
-                        mainAxisSpacing: 20,
-                        childAspectRatio: 0.88,
+                        crossAxisSpacing: isShort ? 10 : 20,
+                        mainAxisSpacing: isShort ? 10 : 20,
+                        childAspectRatio: isShort ? 1.1 : 0.88,
                       ),
                       itemCount: _procedures.length,
                       itemBuilder: (context, index) {
@@ -124,6 +137,7 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
                           title: _procedures[index]['title'] as String,
                           accentColor: _procedures[index]['color'] as Color,
                           description: _procedures[index]['desc'] as String,
+                          isShort: isShort,
                         );
                       },
                     );
@@ -135,11 +149,17 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
 
           // Footer Tombol Selanjutnya
           Padding(
-            padding: const EdgeInsets.fromLTRB(32, 20, 32, 32),
+            padding: EdgeInsets.fromLTRB(
+              isShort ? 16 : 32,
+              isShort ? 8 : 16,
+              isShort ? 16 : 32,
+              isShort ? 10 : 24,
+            ),
             child: Align(
               alignment: Alignment.centerRight,
               child: _PrimaryButton(
                 label: 'Selanjutnya →',
+                isShort: isShort,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -168,12 +188,14 @@ class _ProcedureCard extends StatefulWidget {
   final String title;
   final Color accentColor;
   final String description;
+  final bool isShort;
 
   const _ProcedureCard({
     required this.icon,
     required this.title,
     required this.accentColor,
     required this.description,
+    this.isShort = false,
   });
 
   @override
@@ -196,7 +218,7 @@ class _ProcedureCardState extends State<_ProcedureCard> {
             : Matrix4.identity(),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: widget.accentColor.withOpacity(_isHovered ? 0.22 : 0.07),
@@ -206,7 +228,7 @@ class _ProcedureCardState extends State<_ProcedureCard> {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Column(
             children: [
               // Area Gambar dengan aksen warna
@@ -227,8 +249,8 @@ class _ProcedureCardState extends State<_ProcedureCard> {
                   child: Center(
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      width: _isHovered ? 88 : 80,
-                      height: _isHovered ? 88 : 80,
+                      width: _isHovered ? (widget.isShort ? 52 : 72) : (widget.isShort ? 44 : 64),
+                      height: _isHovered ? (widget.isShort ? 52 : 72) : (widget.isShort ? 44 : 64),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: widget.accentColor.withOpacity(0.15),
@@ -236,7 +258,7 @@ class _ProcedureCardState extends State<_ProcedureCard> {
                       child: Center(
                         child: Icon(
                           widget.icon,
-                          size: 45,
+                          size: widget.isShort ? 26 : 38,
                           color: widget.accentColor,
                         ),
                       ),
@@ -260,7 +282,10 @@ class _ProcedureCardState extends State<_ProcedureCard> {
               Expanded(
                 flex: 2,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: widget.isShort ? 8 : 14,
+                    vertical: widget.isShort ? 6 : 10,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -268,23 +293,26 @@ class _ProcedureCardState extends State<_ProcedureCard> {
                         widget.title,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          fontSize: 13,
+                          fontSize: widget.isShort ? 10 : 12,
                           color: AppColors.neutral900,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6),
-                      Expanded(
-                        child: Text(
-                          widget.description,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.neutral700,
-                            height: 1.4,
+                      if (!widget.isShort) const SizedBox(height: 4),
+                      if (!widget.isShort)
+                        Expanded(
+                          child: Text(
+                            widget.description,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.neutral700,
+                              height: 1.4,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 3,
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -301,8 +329,9 @@ class _ProcedureCardState extends State<_ProcedureCard> {
 class _NavButton extends StatefulWidget {
   final String label;
   final VoidCallback onTap;
+  final bool isShort;
 
-  const _NavButton({required this.label, required this.onTap});
+  const _NavButton({required this.label, required this.onTap, this.isShort = false});
 
   @override
   State<_NavButton> createState() => _NavButtonState();
@@ -320,12 +349,15 @@ class _NavButtonState extends State<_NavButton> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.isShort ? 12 : 20,
+            vertical: widget.isShort ? 7 : 11,
+          ),
           decoration: BoxDecoration(
             color: _isHovered
                 ? AppColors.white.withOpacity(0.25)
                 : AppColors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: AppColors.white.withOpacity(0.3),
               width: 1,
@@ -333,10 +365,10 @@ class _NavButtonState extends State<_NavButton> {
           ),
           child: Text(
             widget.label,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.white,
               fontWeight: FontWeight.w700,
-              fontSize: 14,
+              fontSize: widget.isShort ? 11 : 13,
             ),
           ),
         ),
@@ -349,8 +381,9 @@ class _NavButtonState extends State<_NavButton> {
 class _PrimaryButton extends StatefulWidget {
   final String label;
   final VoidCallback onTap;
+  final bool isShort;
 
-  const _PrimaryButton({required this.label, required this.onTap});
+  const _PrimaryButton({required this.label, required this.onTap, this.isShort = false});
 
   @override
   State<_PrimaryButton> createState() => _PrimaryButtonState();
@@ -368,7 +401,10 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.isShort ? 20 : 32,
+            vertical: widget.isShort ? 9 : 13,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -376,7 +412,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
                 _isHovered ? AppColors.secondaryDark : AppColors.secondary,
               ],
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
                 color: AppColors.secondary.withOpacity(_isHovered ? 0.4 : 0.2),
@@ -390,10 +426,10 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
             children: [
               Text(
                 widget.label,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: widget.isShort ? 12 : 14,
                 ),
               ),
             ],

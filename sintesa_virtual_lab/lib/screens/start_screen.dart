@@ -58,9 +58,9 @@ class _StartScreenState extends State<StartScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.primary,          // #002259 deep navy
-              Color(0xFF0B357B),          // info dark
-              Color(0xFF1A1A3E),          // very dark navy
+              AppColors.primary, // #002259 deep navy
+              Color(0xFF0B357B), // info dark
+              Color(0xFF1A1A3E), // very dark navy
             ],
             stops: [0.0, 0.55, 1.0],
           ),
@@ -71,12 +71,18 @@ class _StartScreenState extends State<StartScreen>
             Positioned(
               top: -100,
               right: -100,
-              child: _buildCircleDecor(300, AppColors.primaryLight.withOpacity(0.08)),
+              child: _buildCircleDecor(
+                300,
+                AppColors.primaryLight.withOpacity(0.08),
+              ),
             ),
             Positioned(
               bottom: -60,
               left: -60,
-              child: _buildCircleDecor(250, AppColors.secondary.withOpacity(0.06)),
+              child: _buildCircleDecor(
+                250,
+                AppColors.secondary.withOpacity(0.06),
+              ),
             ),
             Positioned(
               top: 200,
@@ -97,75 +103,87 @@ class _StartScreenState extends State<StartScreen>
                     ),
                   );
                 },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo / Banner Image
-                    ScaleTransition(
-                      scale: _pulseAnim,
-                      child: Container(
-                        width: 380,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: AppColors.primaryLighter.withOpacity(0.3),
-                            width: 1.5,
-                          ),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppColors.primaryLight.withOpacity(0.15),
-                              AppColors.primary.withOpacity(0.25),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.info.withOpacity(0.2),
-                              blurRadius: 40,
-                              spreadRadius: 5,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Logo / Banner Image
+                        ScaleTransition(
+                          scale: _pulseAnim,
+                          child: Container(
+                            width: 380,
+                            height: 250,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: AppColors.primaryLighter.withOpacity(
+                                  0.3,
+                                ),
+                                width: 1.5,
+                              ),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.primaryLight.withOpacity(0.15),
+                                  AppColors.primary.withOpacity(0.25),
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.info.withOpacity(0.2),
+                                  blurRadius: 40,
+                                  spreadRadius: 5,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/images/logo_sintesa.png',
-                                height: 80,
-                                // color: AppColors.primaryLighter.withOpacity(0.85),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/logo_sintesa.png',
+                                    height: 80,
+                                    // color: AppColors.primaryLighter.withOpacity(0.85),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'SINTESA',
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.white.withOpacity(0.9),
+                                      letterSpacing: 6,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Virtual Laboratory',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.primaryLighter
+                                          .withOpacity(0.7),
+                                      letterSpacing: 2,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'SINTESA',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.white.withOpacity(0.9),
-                                  letterSpacing: 6,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Virtual Laboratory',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.primaryLighter.withOpacity(0.7),
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(
+                          height: 40,
+                        ), // slightly smaller space for mobile friendliness
+                        // Tombol MULAI dengan glow effect
+                        _MulaiButton(),
+                      ],
                     ),
-                    const SizedBox(height: 56),
-
-                    // Tombol MULAI dengan glow effect
-                    _MulaiButton(),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -179,10 +197,7 @@ class _StartScreenState extends State<StartScreen>
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
@@ -210,7 +225,10 @@ class _MulaiButtonState extends State<_MulaiButton> {
           gradient: LinearGradient(
             colors: _isHovered
                 ? [AppColors.secondary, AppColors.secondaryDark]
-                : [AppColors.secondary.withOpacity(0.9), AppColors.secondaryDark],
+                : [
+                    AppColors.secondary.withOpacity(0.9),
+                    AppColors.secondaryDark,
+                  ],
           ),
           boxShadow: [
             BoxShadow(
@@ -230,10 +248,8 @@ class _MulaiButtonState extends State<_MulaiButton> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (_, animation, __) => const LoginScreen(),
-                  transitionsBuilder: (_, animation, __, child) => FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
+                  transitionsBuilder: (_, animation, __, child) =>
+                      FadeTransition(opacity: animation, child: child),
                   transitionDuration: const Duration(milliseconds: 500),
                 ),
               );

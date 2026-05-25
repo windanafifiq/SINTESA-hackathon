@@ -32,9 +32,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     final List<List<Map<String, dynamic>>> categories = [
       // Kimia
       [
-        {'title': ModuleTitles.asamBasa, 'image': 'assets/images/asam_basa_alami.jpg'},
-        {'title': ModuleTitles.reaksiRedoks, 'image': 'assets/images/reaksi_redoks.jpg'},
-        {'title': ModuleTitles.larutanBuffer, 'image': 'assets/images/larutan_buffer.jpg'},
+        {
+          'title': ModuleTitles.asamBasa,
+          'image': 'assets/images/asam_basa_alami.jpg',
+        },
+        {
+          'title': ModuleTitles.reaksiRedoks,
+          'image': 'assets/images/reaksi_redoks.jpg',
+        },
+        {
+          'title': ModuleTitles.larutanBuffer,
+          'image': 'assets/images/larutan_buffer.jpg',
+        },
       ],
       // Biologi
       [
@@ -44,19 +53,23 @@ class _DashboardScreenState extends State<DashboardScreen>
       ],
       // Fisika
       [
-        {'title': 'Gerak Parabola', 'image': 'assets/images/gerak_parabola.jpg'},
+        {
+          'title': 'Gerak Parabola',
+          'image': 'assets/images/gerak_parabola.jpg',
+        },
         {'title': 'Hukum Newton', 'image': 'assets/images/newton.jpg'},
-        {'title': 'Listrik Dinamis', 'image': 'assets/images/listrik_dinamis.jpg'},
+        {
+          'title': 'Listrik Dinamis',
+          'image': 'assets/images/listrik_dinamis.jpg',
+        },
       ],
     ];
 
     return categories[_selectedSidebarIndex].map((m) {
-      final progress = ModuleProgress.status[m['title']] ?? {'status': 'Mulai', 'score': null};
-      return {
-        ...m,
-        'status': progress['status'],
-        'score': progress['score'],
-      };
+      final progress =
+          ModuleProgress.status[m['title']] ??
+          {'status': 'Mulai', 'score': null};
+      return {...m, 'status': progress['status'], 'score': progress['score']};
     }).toList();
   }
 
@@ -69,7 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _fadeController.forward();
-    
+
     // Sinkronisasi dengan database
     ModuleProgress.syncWithFirestore().then((_) {
       if (mounted) setState(() {});
@@ -117,129 +130,143 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Sidebar — Profil
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.white.withOpacity(0.1),
-                  width: 1,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Sidebar — Profil
+            Container(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppColors.white.withOpacity(0.1),
+                    width: 1,
+                  ),
                 ),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [AppColors.secondary, AppColors.secondaryDark],
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [AppColors.secondary, AppColors.secondaryDark],
+                      ),
                     ),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.person, color: AppColors.white, size: 22),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        FirebaseAuth.instance.currentUser?.displayName ??
-                            FirebaseAuth.instance.currentUser?.email??
-                            'Pengguna',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'Siswa',
-                        style: TextStyle(
-                          color: AppColors.primaryLighter.withOpacity(0.7),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Tombol Logout
-                Tooltip(
-                  message: 'Keluar',
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () async {
-                      await AuthService().signOut();
-                      if (context.mounted) {
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (_, animation, __) => const LoginScreen(),
-                            transitionsBuilder: (_, animation, __, child) =>
-                                FadeTransition(opacity: animation, child: child),
-                            transitionDuration: const Duration(milliseconds: 400),
-                          ),
-                        );
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                    child: const Center(
                       child: Icon(
-                        Icons.logout_rounded,
-                        color: AppColors.primaryLighter.withOpacity(0.7),
-                        size: 18,
+                        Icons.person,
+                        color: AppColors.white,
+                        size: 22,
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          // Label navigasi
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
-            child: Text(
-              'MATA PELAJARAN',
-              style: TextStyle(
-                color: AppColors.primaryLighter.withOpacity(0.5),
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.5,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          FirebaseAuth.instance.currentUser?.displayName ??
+                              FirebaseAuth.instance.currentUser?.email ??
+                              'Pengguna',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          'Siswa',
+                          style: TextStyle(
+                            color: AppColors.primaryLighter.withOpacity(0.7),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Tombol Logout
+                  Tooltip(
+                    message: 'Keluar',
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () async {
+                        await AuthService().signOut();
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (_, animation, __) =>
+                                  const LoginScreen(),
+                              transitionsBuilder: (_, animation, __, child) =>
+                                  FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  ),
+                              transitionDuration: const Duration(
+                                milliseconds: 400,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.logout_rounded,
+                          color: AppColors.primaryLighter.withOpacity(0.7),
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
 
-          // Daftar menu
-          ...List.generate(_sidebarItems.length, (index) {
-            final item = _sidebarItems[index];
-            final isSelected = _selectedSidebarIndex == index;
-            return _SidebarItem(
-              icon: item['icon'] as IconData,
-              label: item['label'] as String,
-              isSelected: isSelected,
-              onTap: () => _selectCategory(index),
-            );
-          }),
-        ],
+            // Label navigasi
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
+              child: Text(
+                'MATA PELAJARAN',
+                style: TextStyle(
+                  color: AppColors.primaryLighter.withOpacity(0.5),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+
+            // Daftar menu
+            ...List.generate(_sidebarItems.length, (index) {
+              final item = _sidebarItems[index];
+              final isSelected = _selectedSidebarIndex == index;
+              return _SidebarItem(
+                icon: item['icon'] as IconData,
+                label: item['label'] as String,
+                isSelected: isSelected,
+                onTap: () => _selectCategory(index),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildMainContent() {
+    final screenH = MediaQuery.of(context).size.height;
+    final isShort = screenH < 500;
     if (_selectedSidebarIndex == 3) {
       return const GradeScreen();
     }
@@ -248,16 +275,16 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Container(
       color: const Color(0xFFF0F4FF), // Biru sangat muda sebagai background
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(40),
+        padding: EdgeInsets.all(isShort ? 16 : 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Banner hero
             Container(
               width: double.infinity,
-              height: 260,
+              height: isShort ? 110 : 180,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(18),
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -266,8 +293,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primary.withOpacity(0.35),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -275,83 +302,77 @@ class _DashboardScreenState extends State<DashboardScreen>
                 children: [
                   // Dekorasi lingkaran
                   Positioned(
-                    right: -40,
-                    top: -40,
+                    right: -30,
+                    top: -30,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 140,
+                      height: 140,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.white.withOpacity(0.04),
                       ),
                     ),
                   ),
-                  Positioned(
-                    right: 60,
-                    bottom: -60,
-                    child: Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondary.withOpacity(0.1),
-                      ),
-                    ),
-                  ),
                   // Konten banner
                   Padding(
-                    padding: const EdgeInsets.all(40),
+                    padding: EdgeInsets.all(isShort ? 14 : 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isShort ? 8 : 12,
+                            vertical: isShort ? 3 : 5,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.secondary.withOpacity(0.25),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            _sidebarItems[_selectedSidebarIndex]['label'] as String,
-                            style: const TextStyle(
+                            _sidebarItems[_selectedSidebarIndex]['label']
+                                as String,
+                            style: TextStyle(
                               color: AppColors.secondaryLight,
-                              fontSize: 12,
+                              fontSize: isShort ? 9 : 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Selamat Datang di\nVirtual Lab!',
+                        SizedBox(height: isShort ? 4 : 10),
+                        Text(
+                          'Selamat Datang di Virtual Lab!',
                           style: TextStyle(
-                            fontSize: 30,
+                            fontSize: isShort ? 16 : 22,
                             fontWeight: FontWeight.w900,
                             color: AppColors.white,
                             height: 1.2,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Eksplorasi eksperimen sains secara interaktif\ndan aman di sini.',
-                          style: TextStyle(
-                            color: AppColors.primaryLighter.withOpacity(0.85),
-                            fontSize: 14,
-                            height: 1.5,
+                        if (!isShort) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Eksplorasi eksperimen sains secara interaktif dan aman.',
+                            style: TextStyle(
+                              color: AppColors.primaryLighter.withOpacity(0.85),
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
                   // Logo Sintesa di banner
                   Positioned(
-                    right: 40,
+                    right: isShort ? 12 : 24,
                     top: 0,
                     bottom: 0,
                     child: Center(
                       child: Image.asset(
                         'assets/images/logo_sintesa.png',
-                        height: 120,
+                        height: isShort ? 70 : 110,
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -359,19 +380,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: isShort ? 12 : 24),
 
             // Judul Pilih Modul
-            const Text(
+            Text(
               'Pilih Modul',
               style: TextStyle(
-                fontSize: 26,
+                fontSize: isShort ? 16 : 22,
                 fontWeight: FontWeight.w900,
                 color: AppColors.primary,
                 letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: isShort ? 10 : 16),
 
             // Grid Modul
             FadeTransition(
@@ -384,9 +405,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 24,
-                      mainAxisSpacing: 24,
-                      childAspectRatio: 0.82,
+                      crossAxisSpacing: isShort ? 12 : 20,
+                      mainAxisSpacing: isShort ? 12 : 20,
+                      childAspectRatio: isShort ? 0.95 : 0.82,
                     ),
                     itemCount: modules.length,
                     itemBuilder: (context, index) {
@@ -396,45 +417,59 @@ class _DashboardScreenState extends State<DashboardScreen>
                         score: modules[index]['score'] as int?,
                         image: modules[index]['image'] as String?,
                         onTap: () {
-                          if (modules[index]['title'] == ModuleTitles.asamBasa) {
+                          if (modules[index]['title'] ==
+                              ModuleTitles.asamBasa) {
                             Navigator.push(
                               context,
                               PageRouteBuilder(
-                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
-                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
-                                  opacity: animation,
-                                  child: child,
+                                pageBuilder: (_, animation, __) =>
+                                    const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) =>
+                                    FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                transitionDuration: const Duration(
+                                  milliseconds: 400,
                                 ),
-                                transitionDuration: const Duration(milliseconds: 400),
                               ),
                             ).then((_) {
                               setState(() {});
-                            }); 
+                            });
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Modul ${modules[index]['title']} belum tersedia.'),
+                                content: Text(
+                                  'Modul ${modules[index]['title']} belum tersedia.',
+                                ),
                                 backgroundColor: AppColors.primary,
                               ),
                             );
                           }
                         },
                         onRestart: () {
-                          if (modules[index]['title'] == ModuleTitles.asamBasa) {
+                          if (modules[index]['title'] ==
+                              ModuleTitles.asamBasa) {
                             Navigator.push(
                               context,
                               PageRouteBuilder(
-                                pageBuilder: (_, animation, __) => const SafetyProcedureScreen(),
-                                transitionsBuilder: (_, animation, __, child) => FadeTransition(
-                                  opacity: animation,
-                                  child: child,
+                                pageBuilder: (_, animation, __) =>
+                                    const SafetyProcedureScreen(),
+                                transitionsBuilder: (_, animation, __, child) =>
+                                    FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                transitionDuration: const Duration(
+                                  milliseconds: 400,
                                 ),
-                                transitionDuration: const Duration(milliseconds: 400),
                               ),
                             ).then((_) => setState(() {}));
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Praktikum belum tersedia.')),
+                              const SnackBar(
+                                content: Text('Praktikum belum tersedia.'),
+                              ),
                             );
                           }
                         },
@@ -490,22 +525,31 @@ class _SidebarItemState extends State<_SidebarItem> {
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: widget.isSelected
-                ? Border.all(color: AppColors.secondary.withOpacity(0.5), width: 1)
+                ? Border.all(
+                    color: AppColors.secondary.withOpacity(0.5),
+                    width: 1,
+                  )
                 : null,
           ),
           child: Row(
             children: [
               Icon(
                 widget.icon,
-                color: widget.isSelected ? AppColors.secondary : AppColors.primaryLighter.withOpacity(0.7),
+                color: widget.isSelected
+                    ? AppColors.secondary
+                    : AppColors.primaryLighter.withOpacity(0.7),
                 size: 20,
               ),
               const SizedBox(width: 14),
               Text(
                 widget.label,
                 style: TextStyle(
-                  color: widget.isSelected ? AppColors.white : AppColors.primaryLighter.withOpacity(0.75),
-                  fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: widget.isSelected
+                      ? AppColors.white
+                      : AppColors.primaryLighter.withOpacity(0.75),
+                  fontWeight: widget.isSelected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
                   fontSize: 14,
                 ),
               ),
@@ -532,7 +576,7 @@ class _SidebarItemState extends State<_SidebarItem> {
 class _ModuleCard extends StatefulWidget {
   final String title;
   final String status; // 'Mulai' atau 'Selesai'
-  final int? score;    // nilai jika sudah Selesai
+  final int? score; // nilai jika sudah Selesai
   final String? image;
   final VoidCallback onTap;
   final VoidCallback onRestart;
@@ -577,7 +621,10 @@ class _ModuleCardState extends State<_ModuleCard> {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
           border: _isDone
-              ? Border.all(color: AppColors.success.withOpacity(0.4), width: 1.5)
+              ? Border.all(
+                  color: AppColors.success.withOpacity(0.4),
+                  width: 1.5,
+                )
               : null,
           boxShadow: [
             BoxShadow(
@@ -616,13 +663,14 @@ class _ModuleCardState extends State<_ModuleCard> {
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
-                              errorBuilder: (context, error, stackTrace) => Center(
-                                child: Icon(
-                                  Icons.image_not_supported_rounded,
-                                  size: 40,
-                                  color: AppColors.primary.withOpacity(0.3),
-                                ),
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(
+                                    child: Icon(
+                                      Icons.image_not_supported_rounded,
+                                      size: 40,
+                                      color: AppColors.primary.withOpacity(0.3),
+                                    ),
+                                  ),
                             )
                           : Center(
                               child: Icon(
@@ -638,14 +686,21 @@ class _ModuleCardState extends State<_ModuleCard> {
                         top: 10,
                         left: 10,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.success,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.check_circle_rounded, color: Colors.white, size: 12),
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: Colors.white,
+                                size: 12,
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'Selesai',
@@ -666,88 +721,103 @@ class _ModuleCardState extends State<_ModuleCard> {
               // Garis bawah: hijau kalau selesai, kosong kalau mulai
               Container(
                 height: 4,
-                color: _isDone ? AppColors.success.withOpacity(0.5) : AppColors.neutral100,
+                color: _isDone
+                    ? AppColors.success.withOpacity(0.5)
+                    : AppColors.neutral100,
               ),
 
               // Info & Tombol
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                          color: AppColors.primary,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: AppColors.primary,
                       ),
-                      const SizedBox(height: 4),
-                      // Tampilkan nilai jika sudah selesai
-                      if (_isDone && widget.score != null)
-                        Row(
-                          children: [
-                            Icon(Icons.star_rounded, color: _scoreColor, size: 14),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Nilai: ${widget.score}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: _scoreColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      const Spacer(),
-                      // Tombol Mulai ATAU Restart
-                      if (_isDone)
-                        SizedBox(
-                          width: double.infinity,
-                          height: 34,
-                          child: OutlinedButton.icon(
-                            onPressed: widget.onRestart,
-                            icon: const Icon(Icons.replay_rounded, size: 14),
-                            label: const Text(
-                              'Ulangi',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.success,
-                              side: BorderSide(color: AppColors.success.withOpacity(0.6)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    // Tampilkan nilai jika sudah selesai
+                    if (_isDone && widget.score != null) ...[
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.star_rounded,
+                            color: _scoreColor,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Nilai: ${widget.score}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: _scoreColor,
                             ),
                           ),
-                        )
-                      else
-                        SizedBox(
-                          width: double.infinity,
-                          height: 34,
-                          child: ElevatedButton(
-                            onPressed: widget.onTap,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.secondary,
-                              foregroundColor: AppColors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Text(
-                              'Mulai',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                    ] else ...[
+                      const SizedBox(height: 6),
                     ],
-                  ),
+                    // Tombol Mulai ATAU Restart
+                    if (_isDone)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 34,
+                        child: OutlinedButton.icon(
+                          onPressed: widget.onRestart,
+                          icon: const Icon(Icons.replay_rounded, size: 14),
+                          label: const Text(
+                            'Ulangi',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.success,
+                            side: BorderSide(
+                              color: AppColors.success.withOpacity(0.6),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        height: 34,
+                        child: ElevatedButton(
+                          onPressed: widget.onTap,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary,
+                            foregroundColor: AppColors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Mulai',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

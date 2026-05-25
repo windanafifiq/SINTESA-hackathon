@@ -13,9 +13,7 @@ class LabBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A2744),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFF1A2744)),
       child: Stack(
         children: [
           // Background asset
@@ -23,9 +21,8 @@ class LabBackground extends StatelessWidget {
             child: Image.asset(
               'assets/images/background.png',
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: const Color(0xFF1A2744),
-              ),
+              errorBuilder: (context, error, stackTrace) =>
+                  Container(color: const Color(0xFF1A2744)),
             ),
           ),
           // Gradient overlay for depth
@@ -84,9 +81,10 @@ class _FlaskWidgetState extends State<FlaskWidget>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _scaleAnim = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _animCtrl, curve: Curves.elasticOut),
-    );
+    _scaleAnim = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.elasticOut));
   }
 
   @override
@@ -145,8 +143,10 @@ class _FlaskWidgetState extends State<FlaskWidget>
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary900.withOpacity(0.85),
                     borderRadius: BorderRadius.circular(6),
@@ -183,12 +183,16 @@ class InventoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isShort = MediaQuery.of(context).size.height < 500;
+    final topMargin = isShort ? 55.0 : 100.0;
+    final bottomMargin = isShort ? 16.0 : 100.0;
+
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeOutCubic,
       left: isOpen ? 0 : -240, // -240 agar tombol tab (40px) tetap kelihatan
-      top: 100,
-      bottom: 100,
+      top: topMargin,
+      bottom: bottomMargin,
       child: Row(
         children: [
           // Content
@@ -216,11 +220,17 @@ class InventoryWidget extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: AppColors.primary800,
-                    borderRadius: const BorderRadius.only(topRight: Radius.circular(22)),
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(22),
+                    ),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.backpack, color: AppColors.warning400, size: 20),
+                      Icon(
+                        Icons.backpack,
+                        color: AppColors.warning400,
+                        size: 20,
+                      ),
                       SizedBox(width: 10),
                       Text(
                         'INVENTORY',
@@ -308,16 +318,9 @@ class InventoryWidget extends StatelessWidget {
       data: data,
       feedback: Opacity(
         opacity: 0.8,
-        child: SizedBox(
-          width: 100,
-          height: 140,
-          child: Image.asset(asset),
-        ),
+        child: SizedBox(width: 100, height: 140, child: Image.asset(asset)),
       ),
-      childWhenDragging: Opacity(
-        opacity: 0.3,
-        child: _itemBox(label, asset),
-      ),
+      childWhenDragging: Opacity(opacity: 0.3, child: _itemBox(label, asset)),
       child: _itemBox(label, asset),
     );
   }
@@ -388,12 +391,16 @@ class LabNotebook extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isShort = MediaQuery.of(context).size.height < 500;
+    final topMargin = isShort ? 55.0 : 100.0;
+    final bottomMargin = isShort ? 16.0 : 100.0;
+
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeOutCubic,
       right: isOpen ? 0 : -240, // Match inventory logic but from right
-      top: 100,
-      bottom: 100,
+      top: topMargin,
+      bottom: bottomMargin,
       child: Row(
         children: [
           // Toggle button (Vertical)
@@ -462,12 +469,14 @@ class LabNotebook extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary800,
-                  ),
+                  decoration: const BoxDecoration(color: AppColors.primary800),
                   child: const Row(
                     children: [
-                      Icon(Icons.auto_stories, color: AppColors.info400, size: 20),
+                      Icon(
+                        Icons.auto_stories,
+                        color: AppColors.info400,
+                        size: 20,
+                      ),
                       SizedBox(width: 10),
                       Text(
                         'OBSERVASI',
@@ -506,7 +515,9 @@ class LabNotebook extends StatelessWidget {
         color: Colors.black26,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: s.hasKunyit ? AppColors.info500.withOpacity(0.3) : Colors.white10,
+          color: s.hasKunyit
+              ? AppColors.info500.withOpacity(0.3)
+              : Colors.white10,
         ),
       ),
       child: Column(
@@ -527,11 +538,21 @@ class LabNotebook extends StatelessWidget {
               style: TextStyle(color: Colors.white54, fontSize: 10),
             )
           else ...[
-            _notebookRow('Sifat:', s.observationType ?? 'Pilih...', 
-                () => _showPicker(context, s, 'sifat', ['Asam', 'Basa', 'Netral'])),
+            _notebookRow(
+              'Sifat:',
+              s.observationType ?? 'Pilih...',
+              () =>
+                  _showPicker(context, s, 'sifat', ['Asam', 'Basa', 'Netral']),
+            ),
             const SizedBox(height: 8),
-            _notebookRow('Reaksi:', s.observationNote ?? 'Pilih...', 
-                () => _showPicker(context, s, 'reaksi', ['Tidak Bereaksi', 'Merah Kecokelatan'])),
+            _notebookRow(
+              'Reaksi:',
+              s.observationNote ?? 'Pilih...',
+              () => _showPicker(context, s, 'reaksi', [
+                'Tidak Bereaksi',
+                'Merah Kecokelatan',
+              ]),
+            ),
           ],
         ],
       ),
@@ -543,7 +564,10 @@ class LabNotebook extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 10),
+          ),
           const SizedBox(width: 5),
           Expanded(
             child: Text(
@@ -562,43 +586,55 @@ class LabNotebook extends StatelessWidget {
     );
   }
 
-  void _showPicker(BuildContext context, WidgetSolution s, String field, List<String> options) {
+  void _showPicker(
+    BuildContext context,
+    WidgetSolution s,
+    String field,
+    List<String> options,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.primary900,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Data ${s.name}',
-            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.map((opt) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (field == 'sifat') {
-                    onSave(s.id, type: opt);
-                  } else {
-                    onSave(s.id, note: opt);
-                  }
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary800,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+        title: Text(
+          'Data ${s.name}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: options.map((opt) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (field == 'sifat') {
+                      onSave(s.id, type: opt);
+                    } else {
+                      onSave(s.id, note: opt);
+                    }
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary800,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                  child: Text(opt, style: const TextStyle(fontSize: 12)),
                 ),
-                child: Text(opt, style: const TextStyle(fontSize: 12)),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
   }
 }
-
 
 /// The draggable sendok preparat widget
 class DraggableSendok extends StatefulWidget {
@@ -629,9 +665,10 @@ class _DraggableSendokState extends State<DraggableSendok>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    _floatAnim = Tween<double>(begin: -4, end: 4).animate(
-      CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut),
-    );
+    _floatAnim = Tween<double>(
+      begin: -4,
+      end: 4,
+    ).animate(CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -691,13 +728,16 @@ class _DraggableSendokState extends State<DraggableSendok>
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                        color: const Color(0xFFFFD700).withOpacity(0.5)),
+                      color: const Color(0xFFFFD700).withOpacity(0.5),
+                    ),
                   ),
                   child: const Text(
                     'Sendok\nPreparat',
@@ -710,11 +750,7 @@ class _DraggableSendokState extends State<DraggableSendok>
                   ),
                 ),
                 const SizedBox(height: 2),
-                const Icon(
-                  Icons.touch_app,
-                  color: Colors.white54,
-                  size: 14,
-                ),
+                const Icon(Icons.touch_app, color: Colors.white54, size: 14),
                 const Text(
                   'Drag ke gelas!',
                   style: TextStyle(color: Colors.white54, fontSize: 8),
@@ -792,10 +828,7 @@ class SolutionResultCard extends StatelessWidget {
       duration: Duration(milliseconds: 300 + index * 100),
       curve: Curves.easeOutBack,
       builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: child,
-        );
+        return Transform.scale(scale: value, child: child);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -803,9 +836,7 @@ class SolutionResultCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.primary900.withOpacity(0.7),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: solution.typeColor.withOpacity(0.5),
-          ),
+          border: Border.all(color: solution.typeColor.withOpacity(0.5)),
         ),
         child: Row(
           children: [
@@ -838,12 +869,15 @@ class SolutionResultCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1),
+                          horizontal: 6,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: solution.typeColor.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                              color: solution.typeColor.withOpacity(0.6)),
+                            color: solution.typeColor.withOpacity(0.6),
+                          ),
                         ),
                         child: Text(
                           solution.typeLabel,
@@ -890,7 +924,6 @@ class SolutionResultCard extends StatelessWidget {
     );
   }
 }
-
 
 // WidgetSolution mapping is now directly linked to the model's SolutionState
 
@@ -952,7 +985,8 @@ class WidgetSolution {
   /// Warna liquid saat ini untuk fallback CustomPaint (FlaskPainter)
   Color get currentLiquidColor {
     if (!hasKunyit) return const Color(0xFFB3D9FF); // bening sebelum kunyit
-    if (!isRevealed) return const Color(0xFFE8C94B).withOpacity(0.6); // kunyit belum bereaksi
+    if (!isRevealed)
+      return const Color(0xFFE8C94B).withOpacity(0.6); // kunyit belum bereaksi
     return afterColor; // warna reaksi
   }
 
@@ -963,18 +997,18 @@ class WidgetSolution {
   /// - Basa       (pH < 11) : merah kecokelatan
   /// - Basa kuat  (pH ≥ 11) : merah tua / cokelat gelap
   Color get afterColor {
-    if (ph < 4)  return const Color(0xFFFFF176); // kuning cerah
-    if (ph < 7)  return const Color(0xFFFFD54F); // kuning
-    if (ph < 8)  return const Color(0xFFFFB300); // kuning kecokelatan
+    if (ph < 4) return const Color(0xFFFFF176); // kuning cerah
+    if (ph < 7) return const Color(0xFFFFD54F); // kuning
+    if (ph < 8) return const Color(0xFFFFB300); // kuning kecokelatan
     if (ph < 11) return const Color(0xFFBF360C); // merah kecokelatan
-    return const Color(0xFF7B1111);               // merah tua
+    return const Color(0xFF7B1111); // merah tua
   }
 
   /// Warna label asam/basa/netral untuk UI card
   Color get typeColor {
-    if (ph < 7) return const Color(0xFF4E91FF);  // biru untuk asam
+    if (ph < 7) return const Color(0xFF4E91FF); // biru untuk asam
     if (ph == 7) return const Color(0xFF4CAF50); // hijau untuk netral
-    return const Color(0xFFFF7043);              // oranye untuk basa
+    return const Color(0xFFFF7043); // oranye untuk basa
   }
 
   // ── Text getters ─────────────────────────────────────────────────────────
@@ -990,9 +1024,9 @@ class WidgetSolution {
 
   /// Nama warna reaksi dalam bahasa Indonesia
   String get reactionColorName {
-    if (ph < 4)  return 'Kuning Cerah';
-    if (ph < 7)  return 'Kuning';
-    if (ph < 8)  return 'Kuning Kecokelatan';
+    if (ph < 4) return 'Kuning Cerah';
+    if (ph < 7) return 'Kuning';
+    if (ph < 8) return 'Kuning Kecokelatan';
     if (ph < 11) return 'Merah Kecokelatan';
     return 'Merah Tua';
   }
@@ -1038,4 +1072,3 @@ class WidgetSolution {
     );
   }
 }
-

@@ -54,8 +54,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _popupScale =
-        CurvedAnimation(parent: _popupCtrl, curve: Curves.elasticOut);
+    _popupScale = CurvedAnimation(parent: _popupCtrl, curve: Curves.elasticOut);
 
     // Create a stir controller for each solution
     for (final s in widget.gameState.solutions) {
@@ -64,11 +63,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         duration: const Duration(milliseconds: 600),
       );
       _stirControllers[s.id] = ctrl;
-      _stirAnims[s.id] =
-          Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
-        parent: ctrl,
-        curve: Curves.easeInOut,
-      ));
+      _stirAnims[s.id] = Tween<double>(
+        begin: 0,
+        end: 1,
+      ).animate(CurvedAnimation(parent: ctrl, curve: Curves.easeInOut));
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -130,8 +128,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // ── Stir action ────────────────────────────────────────────────────────────
 
   Future<void> _onStirFlask(String solutionId) async {
-    final solution =
-        widget.gameState.solutions.firstWhere((s) => s.id == solutionId);
+    final solution = widget.gameState.solutions.firstWhere(
+      (s) => s.id == solutionId,
+    );
 
     if (solution.state != SolutionState.kunyitAdded) {
       if (solution.state == SolutionState.empty) {
@@ -147,12 +146,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     // Update state → revealed
     final success = widget.gameState.stirSolution(solutionId);
     if (success) {
-      final s =
-          widget.gameState.solutions.firstWhere((s) => s.id == solutionId);
-      _showFeedbackMessage(
-        'Selesai diaduk! Amati perubahan warnanya.',
-        true,
+      final s = widget.gameState.solutions.firstWhere(
+        (s) => s.id == solutionId,
       );
+      _showFeedbackMessage('Selesai diaduk! Amati perubahan warnanya.', true);
     }
   }
 
@@ -170,12 +167,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 _buildMainContent(),
 
                 // HUD
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: _buildHUD(),
-                ),
+                Positioned(top: 0, left: 0, right: 0, child: _buildHUD()),
 
                 // Feedback Toast
                 if (_showFeedback) _buildFeedbackToast(),
@@ -190,13 +182,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 // Notebook Sidebar
                 LabNotebook(
                   isOpen: _isNotebookOpen,
-                  onToggle: () => setState(() => _isNotebookOpen = !_isNotebookOpen),
+                  onToggle: () =>
+                      setState(() => _isNotebookOpen = !_isNotebookOpen),
                   solutions: widget.gameState.solutions
                       .map((s) => WidgetSolution.fromModel(s))
                       .toList(),
                   onSave: (id, {color, type, note}) {
-                    widget.gameState.updateNotebook(id,
-                        color: color, type: type, note: note);
+                    widget.gameState.updateNotebook(
+                      id,
+                      color: color,
+                      type: type,
+                      note: note,
+                    );
                   },
                 ),
               ],
@@ -211,8 +208,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Widget _buildHUD() {
     return Container(
-      padding:
-          const EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 15),
+      padding: const EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 15),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -226,33 +222,59 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: _secondsRemaining < 30 ? Colors.red.withOpacity(0.8) : Colors.black.withOpacity(0.5),
+              color: _secondsRemaining < 30
+                  ? Colors.red.withOpacity(0.8)
+                  : Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _secondsRemaining < 30 ? Colors.red : Colors.white24),
+              border: Border.all(
+                color: _secondsRemaining < 30 ? Colors.red : Colors.white24,
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.timer, color: _secondsRemaining < 30 ? Colors.white : AppColors.warning400, size: 16),
+                Icon(
+                  Icons.timer,
+                  color: _secondsRemaining < 30
+                      ? Colors.white
+                      : AppColors.warning400,
+                  size: 16,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   '${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}',
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 20),
-          _hudStat(Icons.workspace_premium, AppColors.warning400,
-              widget.gameState.masteryLevel),
+          _hudStat(
+            Icons.workspace_premium,
+            AppColors.warning400,
+            widget.gameState.masteryLevel,
+          ),
           const Spacer(),
-          _hudStat(Icons.security, AppColors.success400,
-              'Safety: ${widget.gameState.safetyScore}%'),
+          _hudStat(
+            Icons.security,
+            AppColors.success400,
+            'Safety: ${widget.gameState.safetyScore}%',
+          ),
           const SizedBox(width: 20),
-          _hudStat(Icons.precision_manufacturing, AppColors.info400,
-              'Prec: ${widget.gameState.precisionScore}%'),
+          _hudStat(
+            Icons.precision_manufacturing,
+            AppColors.info400,
+            'Prec: ${widget.gameState.precisionScore}%',
+          ),
           const SizedBox(width: 20),
-          _hudStat(Icons.star, AppColors.warning400,
-              '${widget.gameState.score} pts'),
+          _hudStat(
+            Icons.star,
+            AppColors.warning400,
+            '${widget.gameState.score} pts',
+          ),
           if (widget.gameState.allGlassesDone) ...[
             const SizedBox(width: 20),
             ElevatedButton(
@@ -273,9 +295,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.success700,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
-              child: const Text('SELESAI', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'SELESAI',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ],
@@ -283,15 +311,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
-
   Widget _hudStat(IconData icon, Color color, String label) {
     return Row(
       children: [
         Icon(icon, color: color, size: 18),
         const SizedBox(width: 6),
-        Text(label,
-            style: TextStyle(
-                color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -301,80 +333,98 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Widget _buildMainContent() {
     return switch (widget.gameState.phase) {
       GamePhase.step1_description => _buildDescriptionStep(),
-      GamePhase.step3_experiment  => _buildExperimentStep(),
-      _                           => _buildDescriptionStep(),
+      GamePhase.step3_experiment => _buildExperimentStep(),
+      _ => _buildDescriptionStep(),
     };
   }
 
   // ── Description step ───────────────────────────────────────────────────────
-
   Widget _buildDescriptionStep() {
     return Center(
       child: Container(
         width: 500,
-        padding: const EdgeInsets.all(30),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        margin: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.primary900.withOpacity(0.9),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.primary700),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.science, color: AppColors.info500, size: 50),
-            const SizedBox(height: 20),
-            const Text(
-              'Praktikum Indikator Asam-Basa',
-              style: TextStyle(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.science, color: AppColors.info500, size: 40),
+              const SizedBox(height: 12),
+              const Text(
+                'Praktikum Indikator Asam-Basa',
+                textAlign: TextAlign.center,
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 15),
-            const Text(
-              'Gunakan ekstrak kunyit untuk menguji sifat larutan.\n'
-              '1. Tuangkan larutan kunyit ke setiap beker glass.\n'
-              '2. Aduk setiap gelas untuk melihat perubahan warna.\n'
-              '3. Catat hasil di Smart Lab-Notebook!',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.6),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.red.withOpacity(0.5)),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              child: const Row(
-                children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'PERINGATAN: Praktikum tidak dapat dijeda selama 2 menit. Pastikan Anda siap.',
-                      style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              const SizedBox(height: 8),
+              const Text(
+                'Gunakan ekstrak kunyit untuk menguji sifat larutan.\n'
+                '1. Tuangkan larutan kunyit ke setiap beker glass.\n'
+                '2. Aduk setiap gelas untuk melihat perubahan warna.\n'
+                '3. Catat hasil di Smart Lab-Notebook!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.red.withOpacity(0.5)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.red,
+                      size: 18,
                     ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'PERINGATAN: Praktikum tidak dapat dijeda selama 2 menit. Pastikan Anda siap.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() => _isGameStarted = true);
+                  _startTimer();
+                  widget.gameState.goToPhase(GamePhase.step3_experiment);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.info700,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
                   ),
-                ],
+                ),
+                child: const Text('Mulai Simulasi'),
               ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                setState(() => _isGameStarted = true);
-                _startTimer();
-                widget.gameState.goToPhase(GamePhase.step3_experiment);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.info700,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-              ),
-              child: const Text('Mulai Simulasi'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -383,9 +433,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // ── Experiment step ────────────────────────────────────────────────────────
 
   Widget _buildExperimentStep() {
+    final isShort = MediaQuery.of(context).size.height < 500;
     return Column(
       children: [
-        const SizedBox(height: 80),
+        SizedBox(height: isShort ? 55 : 80),
 
         // Dynamic instruction bubble
         _buildInstructionBubble(),
@@ -393,38 +444,45 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         // Flask row - Two Rows for better spacing
         Expanded(
           child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Row 1: First 4 flasks
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: widget.gameState.solutions
-                        .take(4)
-                        .map((s) => WidgetSolution.fromModel(s))
-                        .map<Widget>((ws) => _buildFlaskSlot(ws))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 40),
-                  // Row 2: Remaining 3 flasks
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: widget.gameState.solutions
-                        .skip(4)
-                        .map((s) => WidgetSolution.fromModel(s))
-                        .map<Widget>((ws) => _buildFlaskSlot(ws))
-                        .toList(),
-                  ),
-                ],
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 450),
+              curve: Curves.easeOutCubic,
+              padding: EdgeInsets.only(
+                left: _isInventoryOpen ? (isShort ? 130 : 250) : 30,
+                right: _isNotebookOpen ? (isShort ? 130 : 250) : 30,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Row 1: First 4 flasks
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: widget.gameState.solutions
+                          .take(4)
+                          .map((s) => WidgetSolution.fromModel(s))
+                          .map<Widget>((ws) => _buildFlaskSlot(ws))
+                          .toList(),
+                    ),
+                    SizedBox(height: isShort ? 12 : 40),
+                    // Row 2: Remaining 3 flasks
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: widget.gameState.solutions
+                          .skip(4)
+                          .map((s) => WidgetSolution.fromModel(s))
+                          .map<Widget>((ws) => _buildFlaskSlot(ws))
+                          .toList(),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-        
+
         // Space reserved for inventory panel - Reduced to prevent clipping
-        const SizedBox(height: 40),
+        SizedBox(height: isShort ? 16 : 40),
       ],
     );
   }
@@ -434,17 +492,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Widget _buildInstructionBubble() {
     final (text, icon) = switch (_instructionPhase) {
       _InstructionPhase.pour => (
-          'Buka inventory dan drag "Larutan Kunyit" ke setiap beker glass.',
-          Icons.info_outline,
-        ),
+        'Buka inventory dan drag "Larutan Kunyit" ke setiap beker glass.',
+        Icons.info_outline,
+      ),
       _InstructionPhase.stir => (
-          'Bagus! Sekarang drag "Sendok Preparat" dari inventory ke setiap gelas untuk mengaduk.',
-          Icons.touch_app_outlined,
-        ),
+        'Bagus! Sekarang drag "Sendok Preparat" dari inventory ke setiap gelas untuk mengaduk.',
+        Icons.touch_app_outlined,
+      ),
       _InstructionPhase.done => (
-          'Semua larutan sudah teramati! Tekan "Generate Lab Report" untuk melanjutkan.',
-          Icons.check_circle_outline,
-        ),
+        'Semua larutan sudah teramati! Tekan "Generate Lab Report" untuk melanjutkan.',
+        Icons.check_circle_outline,
+      ),
     };
 
     return AnimatedSwitcher(
@@ -461,11 +519,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Widget _buildFlaskSlot(WidgetSolution s) {
     final stirAnim = _stirAnims[s.id]!;
-
-    print("🔍 CEK GELAS [${s.id}] -> State-nya saat ini adalah: ${s.state}");
+    final isShort = MediaQuery.of(context).size.height < 500;
+    final fWidth = isShort ? 75.0 : 120.0;
+    final fHeight = isShort ? 100.0 : 160.0;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
+      padding: EdgeInsets.symmetric(horizontal: isShort ? 6 : 15),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -473,14 +532,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           DragTarget<String>(
             onWillAcceptWithDetails: (details) =>
                 (details.data == 'kunyit' && s.state == SolutionState.empty) ||
-                (details.data == 'sendok' && s.state == SolutionState.kunyitAdded),
+                (details.data == 'sendok' &&
+                    s.state == SolutionState.kunyitAdded),
             onAcceptWithDetails: (details) {
-              print("💡 [DEBUG] Item '${details.data}' mendarat di atas gelas ${s.id}");
+              print(
+                "💡 [DEBUG] Item '${details.data}' mendarat di atas gelas ${s.id}",
+              );
               if (details.data == 'kunyit') {
                 final ok = widget.gameState.addKunyitToSolution(s.id);
                 if (ok) {
                   _showFeedbackMessage(
-                      'Kunyit dituang ke ${s.name}! Sekarang aduk dengan sendok.', true);
+                    'Kunyit dituang ke ${s.name}! Sekarang aduk dengan sendok.',
+                    true,
+                  );
                 }
               } else if (details.data == 'sendok') {
                 _onStirFlask(s.id);
@@ -499,16 +563,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   // Shake/rotate effect while stirring
                   final angle = s.state == SolutionState.kunyitAdded
                       ? 0.0
-                      : stirAnim.value * 0.08 *
-                          (stirAnim.value < 0.5 ? 1 : -1);
-                  return Transform.rotate(
-                    angle: angle,
-                    child: child,
-                  );
+                      : stirAnim.value * 0.08 * (stirAnim.value < 0.5 ? 1 : -1);
+                  return Transform.rotate(angle: angle, child: child);
                 },
                 child: FlaskWidget(
                   solution: s,
                   isDropTarget: isTarget,
+                  width: fWidth,
+                  height: fHeight,
                 ),
               );
             },
@@ -520,14 +582,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: s.state == SolutionState.revealed
-                    ? _RevealedBadge(
-                        key: ValueKey('done_${s.id}'),
-                        label: s.reactionColorName,
-                      )
-                    : const SizedBox(
-                        key: ValueKey('none'),
-                        height: 36,
-                      ),
+                ? _RevealedBadge(
+                    key: ValueKey('done_${s.id}'),
+                    label: s.reactionColorName,
+                  )
+                : SizedBox(
+                    key: const ValueKey('none'),
+                    height: isShort ? 24 : 36,
+                  ),
           ),
         ],
       ),
@@ -556,8 +618,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup')),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Tutup'),
+            ),
           ],
         ),
       ),
@@ -567,9 +630,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _generateReport() {
     _timer?.cancel();
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LabReportFlowScreen(
-        labScore: 100,
-      )),
+      MaterialPageRoute(
+        builder: (_) => const LabReportFlowScreen(labScore: 100),
+      ),
     );
   }
 
@@ -584,21 +647,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         child: ScaleTransition(
           scale: _popupScale,
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
               color: _feedbackSuccess
                   ? AppColors.success700
                   : AppColors.danger900,
               borderRadius: BorderRadius.circular(30),
               boxShadow: const [
-                BoxShadow(color: Colors.black45, blurRadius: 10)
+                BoxShadow(color: Colors.black45, blurRadius: 10),
               ],
             ),
             child: Text(
               _feedbackMessage ?? '',
               style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
@@ -653,9 +717,10 @@ class _StirButtonState extends State<_StirButton>
     return GestureDetector(
       onTap: _handleTap,
       child: RotationTransition(
-        turns: Tween(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(parent: _rotCtrl, curve: Curves.easeInOut),
-        ),
+        turns: Tween(
+          begin: 0.0,
+          end: 1.0,
+        ).animate(CurvedAnimation(parent: _rotCtrl, curve: Curves.easeInOut)),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -671,9 +736,10 @@ class _StirButtonState extends State<_StirButton>
               Text(
                 'Aduk',
                 style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -698,7 +764,11 @@ class _RevealedBadge extends StatelessWidget {
         color: Colors.black45,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(Icons.check_circle, color: Colors.greenAccent, size: 16),
+      child: const Icon(
+        Icons.check_circle,
+        color: Colors.greenAccent,
+        size: 16,
+      ),
     );
   }
 }
