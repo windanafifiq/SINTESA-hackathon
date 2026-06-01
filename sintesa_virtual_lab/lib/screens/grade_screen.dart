@@ -29,7 +29,7 @@ class GradeScreen extends StatelessWidget {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(40, 40, 40, 24),
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -70,7 +70,7 @@ class GradeScreen extends StatelessWidget {
         final attempts = snapshot.data!.docs;
 
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           itemCount: attempts.length,
           itemBuilder: (context, index) {
             final data = attempts[index].data();
@@ -138,7 +138,7 @@ class _AttemptCard extends StatelessWidget {
             children: [
               // Skor Total Badge
               Container(
-                width: 100,
+                width: 90,
                 color: _getScoreColor(totalScore).withOpacity(0.1),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -161,7 +161,7 @@ class _AttemptCard extends StatelessWidget {
               // Info Konten
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

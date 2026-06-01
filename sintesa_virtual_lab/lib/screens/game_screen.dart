@@ -503,29 +503,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 right: _isNotebookOpen ? panelPad : 8,
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Row 1: First 4 flasks
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: widget.gameState.solutions
-                          .take(4)
-                          .map((s) => WidgetSolution.fromModel(s))
-                          .map<Widget>((ws) => _buildFlaskSlot(ws))
-                          .toList(),
-                    ),
-                    SizedBox(height: isShort ? 8 : 24),
-                    // Row 2: Remaining 3 flasks
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: widget.gameState.solutions
-                          .skip(4)
-                          .map((s) => WidgetSolution.fromModel(s))
-                          .map<Widget>((ws) => _buildFlaskSlot(ws))
-                          .toList(),
-                    ),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Row 1: First 4 flasks
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: widget.gameState.solutions
+                            .take(4)
+                            .map((s) => WidgetSolution.fromModel(s))
+                            .map<Widget>((ws) => _buildFlaskSlot(ws))
+                            .toList(),
+                      ),
+                      SizedBox(height: isShort ? 8 : 24),
+                      // Row 2: Remaining 3 flasks
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: widget.gameState.solutions
+                            .skip(4)
+                            .map((s) => WidgetSolution.fromModel(s))
+                            .map<Widget>((ws) => _buildFlaskSlot(ws))
+                            .toList(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
