@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/app_colors.dart';
 import '../models/game_state.dart';
 import '../models/solution.dart';
@@ -49,6 +50,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    // Force landscape for game
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
 
     _popupCtrl = AnimationController(
       vsync: this,
@@ -103,6 +110,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    // Return to portrait + landscape when leaving game
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
     _popupCtrl.dispose();
     _timer?.cancel();
     for (final c in _stirControllers.values) {
@@ -207,108 +222,142 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // ── HUD ────────────────────────────────────────────────────────────────────
 
   Widget _buildHUD() {
+    final safeTop = MediaQuery.of(context).padding.top;
+    final screenW = MediaQuery.of(context).size.width;
+    final isCompact = screenW < 700;
+
     return Container(
-      padding: const EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 15),
+      padding: EdgeInsets.only(
+        top: safeTop + 6,
+        left: 12,
+        right: 12,
+        bottom: 8,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+          colors: [Colors.black.withOpacity(0.85), Colors.transparent],
         ),
       ),
       child: Row(
         children: [
-          // Timer in Top Left
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _secondsRemaining < 30
-                  ? Colors.red.withOpacity(0.8)
-                  : Colors.black.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: _secondsRemaining < 30 ? Colors.red : Colors.white24,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.timer,
-                  color: _secondsRemaining < 30
-                      ? Colors.white
-                      : AppColors.warning400,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 20),
-          _hudStat(
-            Icons.workspace_premium,
-            AppColors.warning400,
-            widget.gameState.masteryLevel,
-          ),
+          // Timer
+          _buildTimerChip(),
+          const SizedBox(width: 8),
+          if (!isCompact) ..._buildHudStats(),
           const Spacer(),
-          _hudStat(
-            Icons.security,
-            AppColors.success400,
-            'Safety: ${widget.gameState.safetyScore}%',
-          ),
-          const SizedBox(width: 20),
-          _hudStat(
-            Icons.precision_manufacturing,
-            AppColors.info400,
-            'Prec: ${widget.gameState.precisionScore}%',
-          ),
-          const SizedBox(width: 20),
-          _hudStat(
-            Icons.star,
-            AppColors.warning400,
-            '${widget.gameState.score} pts',
-          ),
-          if (widget.gameState.allGlassesDone) ...[
-            const SizedBox(width: 20),
-            ElevatedButton(
-              onPressed: () {
-                _timer?.cancel();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (_) => LabReportFlowScreen(
-                      labScore: widget.gameState.score,
-                      completionScore: widget.gameState.completionScore,
-                      notebookScore: widget.gameState.notebookScore,
-                      notebookData: widget.gameState.solutions
-                          .map((s) => WidgetSolution.fromModel(s))
-                          .toList(),
-                    ),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success700,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-              ),
-              child: const Text(
-                'SELESAI',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+          if (isCompact) _buildCompactStats(),
+          if (!isCompact) const SizedBox(width: 8),
+          if (widget.gameState.allGlassesDone) ..._buildFinishButton(),
         ],
       ),
     );
+  }
+
+  Widget _buildTimerChip() {
+    final isLow = _secondsRemaining < 30;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: isLow ? Colors.red.withOpacity(0.85) : Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isLow ? Colors.red : Colors.white24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer, color: isLow ? Colors.white : AppColors.warning400, size: 14),
+          const SizedBox(width: 5),
+          Text(
+            '${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}',
+            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildHudStats() {
+    return [
+      _hudStat(Icons.workspace_premium, AppColors.warning400, widget.gameState.masteryLevel),
+      const SizedBox(width: 12),
+      _hudStat(Icons.security, AppColors.success400, '${widget.gameState.safetyScore}%'),
+      const SizedBox(width: 12),
+      _hudStat(Icons.star, AppColors.warning400, '${widget.gameState.score}pts'),
+    ];
+  }
+
+  Widget _buildCompactStats() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.star, color: AppColors.warning400, size: 13),
+          const SizedBox(width: 3),
+          Text(
+            '${widget.gameState.score}',
+            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 8),
+          Icon(Icons.security, color: AppColors.success400, size: 13),
+          const SizedBox(width: 3),
+          Text(
+            '${widget.gameState.safetyScore}%',
+            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildFinishButton() {
+    return [
+      const SizedBox(width: 8),
+      GestureDetector(
+        onTap: () {
+          _timer?.cancel();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => LabReportFlowScreen(
+                labScore: widget.gameState.score,
+                completionScore: widget.gameState.completionScore,
+                notebookScore: widget.gameState.notebookScore,
+                notebookData: widget.gameState.solutions
+                    .map((s) => WidgetSolution.fromModel(s))
+                    .toList(),
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(color: Colors.green.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 3)),
+            ],
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
+              SizedBox(width: 5),
+              Text('SELESAI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+            ],
+          ),
+        ),
+      ),
+    ];
   }
 
   Widget _hudStat(IconData icon, Color color, String label) {
@@ -434,9 +483,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Widget _buildExperimentStep() {
     final isShort = MediaQuery.of(context).size.height < 500;
+    // Panel sizes: match lab_widgets.dart (panelW: isShort ? 160 : 200) + toggle 36px + buffer 4px
+    final panelPad = isShort ? 200.0 : 240.0;
     return Column(
       children: [
-        SizedBox(height: isShort ? 55 : 80),
+        SizedBox(height: isShort ? 44 : 56),
 
         // Dynamic instruction bubble
         _buildInstructionBubble(),
@@ -445,11 +496,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         Expanded(
           child: Center(
             child: AnimatedPadding(
-              duration: const Duration(milliseconds: 450),
+              duration: const Duration(milliseconds: 400),
               curve: Curves.easeOutCubic,
               padding: EdgeInsets.only(
-                left: _isInventoryOpen ? (isShort ? 130 : 250) : 30,
-                right: _isNotebookOpen ? (isShort ? 130 : 250) : 30,
+                left: _isInventoryOpen ? panelPad : 8,
+                right: _isNotebookOpen ? panelPad : 8,
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -464,7 +515,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                           .map<Widget>((ws) => _buildFlaskSlot(ws))
                           .toList(),
                     ),
-                    SizedBox(height: isShort ? 12 : 40),
+                    SizedBox(height: isShort ? 8 : 24),
                     // Row 2: Remaining 3 flasks
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -481,8 +532,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ),
         ),
 
-        // Space reserved for inventory panel - Reduced to prevent clipping
-        SizedBox(height: isShort ? 16 : 40),
+        SizedBox(height: isShort ? 8 : 20),
       ],
     );
   }

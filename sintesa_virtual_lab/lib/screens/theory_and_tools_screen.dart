@@ -74,13 +74,20 @@ class _TheoryAndToolsScreenState extends State<TheoryAndToolsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    final isShort = MediaQuery.of(context).size.height < 500;
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4FF),
       body: Column(
         children: [
           // Header Bar
           Container(
-            padding: const EdgeInsets.fromLTRB(32, 40, 32, 28),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + (isShort ? 8 : 14),
+              left: isShort ? 14 : 24,
+              right: isShort ? 14 : 24,
+              bottom: isShort ? 10 : 16,
+            ),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [AppColors.primary, Color(0xFF0B357B)],
@@ -101,7 +108,7 @@ class _TheoryAndToolsScreenState extends State<TheoryAndToolsScreen>
                   label: '← Kembali',
                   onTap: () => Navigator.pop(context),
                 ),
-                const SizedBox(width: 120), // spacer placeholder agar "Kembali" kiri atas
+                const SizedBox(width: 120), // spacer agar "Kembali" kiri atas
               ],
             ),
           ),
@@ -111,21 +118,26 @@ class _TheoryAndToolsScreenState extends State<TheoryAndToolsScreen>
             child: FadeTransition(
               opacity: _fadeAnim,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(40),
+                padding: EdgeInsets.fromLTRB(
+                  isShort ? 14 : 24,
+                  isShort ? 14 : 24,
+                  isShort ? 14 : 24,
+                  isShort ? MediaQuery.of(context).padding.bottom + 14 : 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Judul Landasan Teori
                     _SectionHeader(title: 'Landasan Teori', icon: Icons.menu_book_rounded),
-                    const SizedBox(height: 24),
+                    SizedBox(height: isShort ? 14 : 20),
 
                     // Teks Teori
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(32),
+                      padding: EdgeInsets.all(isShort ? 16 : 24),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primary.withOpacity(0.06),
@@ -158,24 +170,26 @@ class _TheoryAndToolsScreenState extends State<TheoryAndToolsScreen>
                       ),
                     ),
 
-                    const SizedBox(height: 48),
+                    SizedBox(height: isShort ? 24 : 40),
 
                     // Judul Alat & Bahan
                     _SectionHeader(title: 'Alat & Bahan', icon: Icons.construction_rounded),
-                    const SizedBox(height: 24),
+                    SizedBox(height: isShort ? 14 : 20),
 
                     // Grid Alat & Bahan
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        int cols = constraints.maxWidth > 1000 ? 4 : (constraints.maxWidth > 700 ? 3 : 2);
+                        int cols = isPortrait
+                            ? 2
+                            : (constraints.maxWidth > 1000 ? 4 : (constraints.maxWidth > 700 ? 3 : 2));
                         return GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: cols,
-                            crossAxisSpacing: 20,
-                            mainAxisSpacing: 20,
-                            childAspectRatio: 0.85,
+                            crossAxisSpacing: isShort ? 10 : 16,
+                            mainAxisSpacing: isShort ? 10 : 16,
+                            childAspectRatio: isPortrait ? 0.68 : 0.75, // Disesuaikan agar card lebih tinggi
                           ),
                           itemCount: _tools.length,
                           itemBuilder: (context, index) {
@@ -192,11 +206,10 @@ class _TheoryAndToolsScreenState extends State<TheoryAndToolsScreen>
                       },
                     ),
 
-                    const SizedBox(height: 48),
+                    SizedBox(height: isShort ? 24 : 40),
 
                     // Tombol Mulai Praktikum
-                    Align(
-                      alignment: Alignment.centerRight,
+                    Center(
                       child: _StartButton(),
                     ),
                   ],
@@ -346,9 +359,9 @@ class _ToolCardState extends State<_ToolCard> {
               ),
               // Info
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -377,8 +390,8 @@ class _ToolCardState extends State<_ToolCard> {
                       Expanded(
                         child: Text(
                           widget.function,
-                          style: TextStyle(fontSize: 11, color: AppColors.neutral700, height: 1.4),
-                          maxLines: 3,
+                          style: const TextStyle(fontSize: 10, color: AppColors.neutral700, height: 1.3),
+                          maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

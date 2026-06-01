@@ -487,8 +487,13 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    final isSmall = MediaQuery.of(context).size.width < 400;
+
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -526,9 +531,8 @@ class _LoginScreenState extends State<LoginScreen>
             ),
 
             // Konten Utama
-            Center(
-              child: AnimatedBuilder(
-                animation: _fadeController,
+            AnimatedBuilder(
+              animation: _fadeController,
                 builder: (context, child) {
                   return Opacity(
                     opacity: _fadeAnim.value,
@@ -538,9 +542,12 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   );
                 },
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-                  child: Center(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmall ? 16 : 24,
+                      vertical: isPortrait ? 24 : 12,
+                    ),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 460),
                       child: Column(
@@ -549,32 +556,35 @@ class _LoginScreenState extends State<LoginScreen>
                           // Logo Card
                           ScaleTransition(
                             scale: _pulseAnim,
-                            child: _buildLogoCard(),
+                            child: _buildLogoCard(isSmall: isSmall),
                           ),
 
-                          const SizedBox(height: 36),
+                          SizedBox(height: isPortrait ? 24 : 16),
 
                           // Form Card
-                          _buildFormCard(),
+                          _buildFormCard(isSmall: isSmall),
+                          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLogoCard() {
+  Widget _buildLogoCard({bool isSmall = false}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 32),
+      padding: EdgeInsets.symmetric(
+        vertical: isSmall ? 16 : 22,
+        horizontal: isSmall ? 16 : 24,
+      ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: AppColors.primaryLighter.withOpacity(0.25),
           width: 1.5,
@@ -600,16 +610,16 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           Image.asset(
             'assets/images/logo_sintesa.png',
-            height: 56,
+            height: isSmall ? 40 : 50,
           ),
-          const SizedBox(width: 20),
+          SizedBox(width: isSmall ? 12 : 18),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'SINTESA',
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: isSmall ? 20 : 24,
                   fontWeight: FontWeight.w900,
                   color: AppColors.white.withOpacity(0.95),
                   letterSpacing: 5,
@@ -618,7 +628,7 @@ class _LoginScreenState extends State<LoginScreen>
               Text(
                 'Virtual Laboratory',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: isSmall ? 10 : 12,
                   color: AppColors.primaryLighter.withOpacity(0.7),
                   letterSpacing: 2,
                 ),
@@ -630,10 +640,10 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildFormCard() {
+  Widget _buildFormCard({bool isSmall = false}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(36),
+      padding: EdgeInsets.all(isSmall ? 20 : 28),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         color: AppColors.white.withOpacity(0.07),

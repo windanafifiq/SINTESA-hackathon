@@ -45,18 +45,20 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
   @override
   Widget build(BuildContext context) {
     final screenH = MediaQuery.of(context).size.height;
+    final screenW = MediaQuery.of(context).size.width;
     final isShort = screenH < 500;
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4FF),
       body: Column(
         children: [
           // Header Bar
           Container(
-            padding: EdgeInsets.fromLTRB(
-              isShort ? 16 : 32,
-              isShort ? 12 : 32,
-              isShort ? 16 : 32,
-              isShort ? 10 : 20,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + (isShort ? 8 : 14),
+              left: isShort ? 14 : 24,
+              right: isShort ? 14 : 24,
+              bottom: isShort ? 10 : 16,
             ),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -82,29 +84,34 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
                 ),
                 Expanded(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         'PROSEDUR',
                         style: TextStyle(
-                          fontSize: isShort ? 14 : 20,
+                          fontSize: isShort ? 12 : 16,
                           fontWeight: FontWeight.w900,
                           color: AppColors.white,
                           letterSpacing: isShort ? 2 : 4,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                       Text(
                         'KESELAMATAN LAB',
                         style: TextStyle(
-                          fontSize: isShort ? 14 : 20,
+                          fontSize: isShort ? 12 : 16,
                           fontWeight: FontWeight.w900,
                           color: AppColors.secondary,
                           letterSpacing: isShort ? 2 : 4,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 ),
-                SizedBox(width: isShort ? 80 : 110), // balancing spacer
+                // Spacer penyeimbang tombol kiri (supaya teks beneran di tengah)
+                SizedBox(width: isShort ? 70 : 100), 
               ],
             ),
           ),
@@ -115,20 +122,26 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
               opacity: _fadeAnim,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
-                  isShort ? 16 : 32,
                   isShort ? 12 : 24,
-                  isShort ? 16 : 32,
+                  isShort ? 10 : 20,
+                  isShort ? 12 : 24,
                   0,
                 ),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    int cols = constraints.maxWidth > 1000 ? 4 : (constraints.maxWidth > 700 ? 3 : (constraints.maxWidth > 500 ? 4 : 2));
+                    // Portrait: 2 cols; landscape wide: 4 cols; landscape narrow: 2-3 cols
+                    int cols;
+                    if (isPortrait) {
+                      cols = 2;
+                    } else {
+                      cols = constraints.maxWidth > 1000 ? 4 : (constraints.maxWidth > 700 ? 3 : 2);
+                    }
                     return GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: cols,
-                        crossAxisSpacing: isShort ? 10 : 20,
-                        mainAxisSpacing: isShort ? 10 : 20,
-                        childAspectRatio: isShort ? 1.1 : 0.88,
+                        crossAxisSpacing: isShort ? 10 : 16,
+                        mainAxisSpacing: isShort ? 10 : 16,
+                        childAspectRatio: isPortrait ? 1.0 : (isShort ? 1.1 : 0.88),
                       ),
                       itemCount: _procedures.length,
                       itemBuilder: (context, index) {
@@ -150,10 +163,10 @@ class _SafetyProcedureScreenState extends State<SafetyProcedureScreen>
           // Footer Tombol Selanjutnya
           Padding(
             padding: EdgeInsets.fromLTRB(
-              isShort ? 16 : 32,
-              isShort ? 8 : 16,
-              isShort ? 16 : 32,
-              isShort ? 10 : 24,
+              isShort ? 14 : 24,
+              isShort ? 8 : 14,
+              isShort ? 14 : 24,
+              isShort ? MediaQuery.of(context).padding.bottom + 8 : 20,
             ),
             child: Align(
               alignment: Alignment.centerRight,

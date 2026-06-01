@@ -8,6 +8,8 @@ enum SolutionState {
   revealed,   // warna sudah berubah (diaduk selesai)
 }
 
+enum SolutionType { asam, basa, netral }
+
 // ── Solution model ───────────────────────────────────────────────────────────
 
 class Solution {
@@ -69,6 +71,12 @@ class Solution {
     if (ph < 7) return 'Asam';
     if (ph == 7) return 'Netral';
     return 'Basa';
+  }
+
+  SolutionType get type {
+    if (ph < 7) return SolutionType.asam;
+    if (ph == 7) return SolutionType.netral;
+    return SolutionType.basa;
   }
 
   Solution copyWith({

@@ -183,33 +183,39 @@ class InventoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isShort = MediaQuery.of(context).size.height < 500;
-    final topMargin = isShort ? 55.0 : 100.0;
-    final bottomMargin = isShort ? 16.0 : 100.0;
+    final screenH = MediaQuery.of(context).size.height;
+    final screenW = MediaQuery.of(context).size.width;
+    final safeTop = MediaQuery.of(context).padding.top;
+    final isShort = screenH < 500;
+    // Panel height: at most 60% of screen height to avoid covering flasks
+    final panelW = isShort ? 160.0 : 200.0;
+    final topMargin = safeTop + (isShort ? 44.0 : 52.0);
+    final bottomMargin = isShort ? 8.0 : 60.0;
 
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
       curve: Curves.easeOutCubic,
-      left: isOpen ? 0 : -240, // -240 agar tombol tab (40px) tetap kelihatan
+      left: isOpen ? 0 : -(panelW),
       top: topMargin,
       bottom: bottomMargin,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Content
           Container(
-            width: 240,
+            width: panelW,
             decoration: BoxDecoration(
-              color: AppColors.primary900.withOpacity(0.95),
+              color: AppColors.primary900.withOpacity(0.97),
               borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(24),
-                bottomRight: Radius.circular(24),
+                topRight: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
-              border: Border.all(color: AppColors.primary700, width: 2),
+              border: Border.all(color: AppColors.primary700, width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: const Offset(5, 0),
+                  blurRadius: 16,
+                  offset: const Offset(4, 0),
                 ),
               ],
             ),
@@ -217,27 +223,27 @@ class InventoryWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isShort ? 12 : 16,
+                    vertical: isShort ? 10 : 14,
+                  ),
+                  decoration: const BoxDecoration(
                     color: AppColors.primary800,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(22),
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(18),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.backpack,
-                        color: AppColors.warning400,
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
+                      const Icon(Icons.backpack, color: AppColors.warning400, size: 16),
+                      const SizedBox(width: 8),
                       Text(
                         'INVENTORY',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
+                          fontSize: isShort ? 9 : 11,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ],
@@ -246,19 +252,21 @@ class InventoryWidget extends StatelessWidget {
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 2,
-                    padding: const EdgeInsets.all(15),
-                    mainAxisSpacing: 15,
-                    crossAxisSpacing: 15,
+                    padding: EdgeInsets.all(isShort ? 8 : 12),
+                    mainAxisSpacing: isShort ? 8 : 12,
+                    crossAxisSpacing: isShort ? 8 : 12,
                     children: [
                       _buildInventoryItem(
                         'Kunyit',
                         'assets/images/Larutan Kunyit.png',
                         'kunyit',
+                        isShort,
                       ),
                       _buildInventoryItem(
                         'Sendok',
                         'assets/images/sendok preparat.png',
                         'sendok',
+                        isShort,
                       ),
                     ],
                   ),
@@ -266,22 +274,23 @@ class InventoryWidget extends StatelessWidget {
               ],
             ),
           ),
-          // Toggle button (Vertical)
+          // Toggle button — 48px touch target
           GestureDetector(
             onTap: onToggle,
             child: Container(
-              width: 40,
-              height: 120,
+              width: 36,
+              height: 80,
+              margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
                 color: AppColors.primary800,
                 borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
+                  topRight: Radius.circular(10),
+                  bottomRight: Radius.circular(10),
                 ),
-                border: Border(
-                  top: BorderSide(color: AppColors.primary700, width: 2),
-                  right: BorderSide(color: AppColors.primary700, width: 2),
-                  bottom: BorderSide(color: AppColors.primary700, width: 2),
+                border: const Border(
+                  top: BorderSide(color: AppColors.primary700, width: 1.5),
+                  right: BorderSide(color: AppColors.primary700, width: 1.5),
+                  bottom: BorderSide(color: AppColors.primary700, width: 1.5),
                 ),
               ),
               child: Column(
@@ -290,15 +299,16 @@ class InventoryWidget extends StatelessWidget {
                   Icon(
                     isOpen ? Icons.chevron_left : Icons.backpack,
                     color: Colors.white,
+                    size: 18,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   const RotatedBox(
                     quarterTurns: 1,
                     child: Text(
-                      'INVENTORY',
+                      'INV',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 8,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
                       ),
@@ -313,49 +323,46 @@ class InventoryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildInventoryItem(String label, String asset, String data) {
+  Widget _buildInventoryItem(String label, String asset, String data, bool isShort) {
     return Draggable<String>(
       data: data,
       feedback: Opacity(
-        opacity: 0.8,
-        child: SizedBox(width: 100, height: 140, child: Image.asset(asset)),
+        opacity: 0.85,
+        child: SizedBox(
+          width: isShort ? 70 : 90,
+          height: isShort ? 100 : 130,
+          child: Image.asset(asset),
+        ),
       ),
-      childWhenDragging: Opacity(opacity: 0.3, child: _itemBox(label, asset)),
-      child: _itemBox(label, asset),
+      childWhenDragging: Opacity(opacity: 0.3, child: _itemBox(label, asset, isShort)),
+      child: _itemBox(label, asset, isShort),
     );
   }
 
-  Widget _itemBox(String label, String asset) {
+  Widget _itemBox(String label, String asset, bool isShort) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.white12, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.white.withOpacity(0.02),
-            blurRadius: 5,
-            spreadRadius: 1,
-          ),
-        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(isShort ? 8 : 10),
               child: Image.asset(asset, fit: BoxFit.contain),
             ),
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            decoration: const BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8),
               ),
             ),
             child: Text(
@@ -363,7 +370,7 @@ class InventoryWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white70,
-                fontSize: 9,
+                fontSize: 8,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -391,34 +398,39 @@ class LabNotebook extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isShort = MediaQuery.of(context).size.height < 500;
-    final topMargin = isShort ? 55.0 : 100.0;
-    final bottomMargin = isShort ? 16.0 : 100.0;
+    final screenH = MediaQuery.of(context).size.height;
+    final safeTop = MediaQuery.of(context).padding.top;
+    final isShort = screenH < 500;
+    final panelW = isShort ? 160.0 : 200.0;
+    final topMargin = safeTop + (isShort ? 44.0 : 52.0);
+    final bottomMargin = isShort ? 8.0 : 60.0;
 
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
       curve: Curves.easeOutCubic,
-      right: isOpen ? 0 : -240, // Match inventory logic but from right
+      right: isOpen ? 0 : -(panelW),
       top: topMargin,
       bottom: bottomMargin,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Toggle button (Vertical)
+          // Toggle button — touch-friendly
           GestureDetector(
             onTap: onToggle,
             child: Container(
-              width: 40,
-              height: 120,
+              width: 36,
+              height: 80,
+              margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
                 color: AppColors.primary800,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
+                  topLeft: Radius.circular(10),
+                  bottomLeft: Radius.circular(10),
                 ),
-                border: Border(
-                  top: BorderSide(color: AppColors.primary700, width: 2),
-                  left: BorderSide(color: AppColors.primary700, width: 2),
-                  bottom: BorderSide(color: AppColors.primary700, width: 2),
+                border: const Border(
+                  top: BorderSide(color: AppColors.primary700, width: 1.5),
+                  left: BorderSide(color: AppColors.primary700, width: 1.5),
+                  bottom: BorderSide(color: AppColors.primary700, width: 1.5),
                 ),
               ),
               child: Column(
@@ -427,15 +439,16 @@ class LabNotebook extends StatelessWidget {
                   Icon(
                     isOpen ? Icons.chevron_right : Icons.edit_note,
                     color: Colors.white,
+                    size: 18,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   const RotatedBox(
                     quarterTurns: 3,
                     child: Text(
-                      'NOTEBOOK',
+                      'NOTE',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 8,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
                       ),
@@ -447,19 +460,19 @@ class LabNotebook extends StatelessWidget {
           ),
           // Content
           Container(
-            width: 240,
+            width: panelW,
             decoration: BoxDecoration(
-              color: AppColors.primary900.withOpacity(0.95),
+              color: AppColors.primary900.withOpacity(0.97),
               borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(0),
-                bottomRight: Radius.circular(0),
+                topLeft: Radius.circular(0),
+                bottomLeft: Radius.circular(0),
               ),
-              border: Border.all(color: AppColors.primary700, width: 2),
+              border: Border.all(color: AppColors.primary700, width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: const Offset(-5, 0),
+                  blurRadius: 16,
+                  offset: const Offset(-4, 0),
                 ),
               ],
             ),
@@ -467,23 +480,23 @@ class LabNotebook extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isShort ? 10 : 14,
+                    vertical: isShort ? 10 : 14,
+                  ),
                   width: double.infinity,
                   decoration: const BoxDecoration(color: AppColors.primary800),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.auto_stories,
-                        color: AppColors.info400,
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
+                      const Icon(Icons.auto_stories, color: AppColors.info400, size: 15),
+                      const SizedBox(width: 8),
                       Text(
                         'OBSERVASI',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
+                          fontSize: isShort ? 9 : 11,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ],
@@ -491,7 +504,7 @@ class LabNotebook extends StatelessWidget {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(15),
+                    padding: EdgeInsets.all(isShort ? 8 : 12),
                     itemCount: solutions.length,
                     itemBuilder: (context, index) {
                       final s = solutions[index];

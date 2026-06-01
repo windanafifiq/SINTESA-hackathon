@@ -3,12 +3,12 @@ import '../models/app_colors.dart';
 import '../models/game_state.dart';
 import '../models/solution.dart';
 import '../widgets/lab_widgets.dart';
-import '../painters/lab_painters.dart';
 import 'dashboard_screen.dart';
 import 'game_screen.dart';
 import '../models/module_state.dart';
 import '../services/score_service.dart';
 
+enum SolutionType { asam, basa, netral }
 
 class ResultScreen extends StatefulWidget {
   final GameState gameState;
@@ -36,8 +36,10 @@ class _ResultScreenState extends State<ResultScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..forward();
-    _headerScale =
-        CurvedAnimation(parent: _headerCtrl, curve: Curves.elasticOut);
+    _headerScale = CurvedAnimation(
+      parent: _headerCtrl,
+      curve: Curves.elasticOut,
+    );
   }
 
   @override
@@ -58,14 +60,25 @@ class _ResultScreenState extends State<ResultScreen>
       _quizCompleted = true;
     });
     // Simpan progres ke Dashboard agar status berubah jadi Selesai
-    ModuleProgress.complete(ModuleTitles.asamBasa, (score / widget.gameState.solutions.length * 100).round());
-    
+    ModuleProgress.complete(
+      ModuleTitles.asamBasa,
+      (score / widget.gameState.solutions.length * 100).round(),
+    );
+
+    final int calculatedQuizScore =
+        (score / widget.gameState.solutions.length * 100).round();
+    final int practicum = widget.gameState.score.clamp(0, 100).toInt();
+    final int report = 100;
+    final int total = ((practicum + report + calculatedQuizScore) / 3).round();
+
     // Simpan ke Firestore untuk riwayat nilai
     ScoreService().saveAttempt(
       moduleId: 'asam_basa_alami',
       moduleName: ModuleTitles.asamBasa,
-      labScore: widget.gameState.score.clamp(0, 100), // Asumsi skor max lab
-      quizScore: (score / widget.gameState.solutions.length * 100).round(),
+      practicumScore: practicum,
+      reportScore: report,
+      quizScore: calculatedQuizScore,
+      totalScore: total,
     );
   }
 
@@ -77,11 +90,7 @@ class _ResultScreenState extends State<ResultScreen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0D1B35),
-              Color(0xFF1A2744),
-              Color(0xFF0D1B35),
-            ],
+            colors: [Color(0xFF0D1B35), Color(0xFF1A2744), Color(0xFF0D1B35)],
           ),
         ),
         child: SafeArea(
@@ -167,14 +176,16 @@ class _ResultScreenState extends State<ResultScreen>
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: solutions
-                  .map((s) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: FlaskWidget(
-                          solution: s,
-                          width: 65,
-                          height: 95,
-                        ),
-                      ))
+                  .map(
+                    (s) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: FlaskWidget(
+                        solution: WidgetSolution.fromModel(s),
+                        width: 65,
+                        height: 95,
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -212,8 +223,7 @@ class _ResultScreenState extends State<ResultScreen>
               foregroundColor: _userAnswers.length == solutions.length
                   ? AppColors.success400
                   : Colors.white54,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
@@ -230,32 +240,31 @@ class _ResultScreenState extends State<ResultScreen>
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 200 + index * 80),
-      builder: (context, value, child) =>
-          Opacity(opacity: value, child: child),
+      builder: (context, value, child) => Opacity(opacity: value, child: child),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.primary900.withOpacity(0.6),
+          color: AppColors.primary900.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: selected != null
-                ? _getTypeColor(selected).withOpacity(0.5)
-                : Colors.white.withOpacity(0.1),
+                ? _getTypeColor(selected).withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Row(
           children: [
             // Color swatch
             Container(
-              width: 20,
-              height: 20,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: solution.afterColor,
+                color: solution.flaskColor,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: solution.afterColor.withOpacity(0.5),
+                    color: solution.flaskColor.withValues(alpha: 0.5),
                     blurRadius: 6,
                   ),
                 ],
@@ -273,34 +282,34 @@ class _ResultScreenState extends State<ResultScreen>
               ),
             ),
             // Answer buttons
-            ...[SolutionType.asam, SolutionType.basa, SolutionType.netral]
-                .map((type) {
+            ...[SolutionType.asam, SolutionType.basa, SolutionType.netral].map((
+              type,
+            ) {
               final isSelected = selected == type;
               return GestureDetector(
-                onTap: () =>
-                    setState(() => _userAnswers[solution.id] = type),
+                onTap: () => setState(() => _userAnswers[solution.id] = type),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   margin: const EdgeInsets.only(left: 6),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? _getTypeColor(type).withOpacity(0.2)
-                        : Colors.white.withOpacity(0.05),
+                        ? _getTypeColor(type).withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
                           ? _getTypeColor(type)
-                          : Colors.white.withOpacity(0.15),
+                          : Colors.white.withValues(alpha: 0.15),
                     ),
                   ),
                   child: Text(
                     _getTypeLabel(type),
                     style: TextStyle(
-                      color: isSelected
-                          ? _getTypeColor(type)
-                          : Colors.white54,
+                      color: isSelected ? _getTypeColor(type) : Colors.white54,
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                     ),
@@ -328,48 +337,76 @@ class _ResultScreenState extends State<ResultScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.primary900.withOpacity(0.8),
+              color: AppColors.primary900.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.info500.withOpacity(0.3)),
+              border: Border.all(
+                color: AppColors.info500.withValues(alpha: 0.3),
+              ),
             ),
             child: Column(
               children: [
                 const Text(
                   'LABORATORY RESEARCH REPORT',
-                  style: TextStyle(color: AppColors.info500, fontWeight: FontWeight.bold, letterSpacing: 2),
+                  style: TextStyle(
+                    color: AppColors.info500,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
                 ),
                 const Divider(color: Colors.white10, height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _reportStat('Mastery', widget.gameState.masteryLevel, AppColors.warning400),
-                    _reportStat('Safety', '${widget.gameState.safetyScore}%', AppColors.success400),
-                    _reportStat('Precision', '${widget.gameState.precisionScore}%', AppColors.info400),
+                    _reportStat(
+                      'Mastery',
+                      widget.gameState.masteryLevel,
+                      AppColors.warning400,
+                    ),
+                    _reportStat(
+                      'Safety',
+                      '${widget.gameState.safetyScore}%',
+                      AppColors.success400,
+                    ),
+                    _reportStat(
+                      'Precision',
+                      '${widget.gameState.precisionScore}%',
+                      AppColors.info400,
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Badge Collection
           if (widget.gameState.badges.isNotEmpty) ...[
             const Text(
               'LENCANA PENCAPAIAN',
-              style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 10,
-              children: widget.gameState.badges.map((b) => _buildBadgeItem(b)).toList(),
+              children: widget.gameState.badges
+                  .map((b) => _buildBadgeItem(b))
+                  .toList(),
             ),
             const SizedBox(height: 25),
           ],
 
           const Text(
             'HASIL ANALISIS LARUTAN',
-            style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -389,19 +426,21 @@ class _ResultScreenState extends State<ResultScreen>
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isCorrect
-                        ? AppColors.success400.withOpacity(0.3)
-                        : AppColors.danger300.withOpacity(0.3),
+                        ? AppColors.success400.withValues(alpha: 0.3)
+                        : AppColors.danger300.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       isCorrect ? Icons.verified : Icons.error_outline,
-                      color: isCorrect ? AppColors.success400 : AppColors.danger300,
+                      color: isCorrect
+                          ? AppColors.success400
+                          : AppColors.danger300,
                     ),
                     const SizedBox(width: 15),
                     Expanded(
@@ -410,12 +449,18 @@ class _ResultScreenState extends State<ResultScreen>
                         children: [
                           Text(
                             solution.name,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            solution.explanation,
-                            style: const TextStyle(color: Colors.white60, fontSize: 11),
+                            'pH: ${solution.ph} - ${solution.reactionColorName}',
+                            style: const TextStyle(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
@@ -439,7 +484,9 @@ class _ResultScreenState extends State<ResultScreen>
                   ),
                   icon: const Icon(Icons.home),
                   label: const Text('Ke Menu Utama'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary800),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary800,
+                  ),
                 ),
               ),
               const SizedBox(width: 15),
@@ -448,12 +495,16 @@ class _ResultScreenState extends State<ResultScreen>
                   onPressed: () {
                     final newState = GameState();
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => GameScreen(gameState: newState)),
+                      MaterialPageRoute(
+                        builder: (_) => GameScreen(gameState: newState),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.refresh),
                   label: const Text('Coba Lagi'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.info700),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.info700,
+                  ),
                 ),
               ),
             ],
@@ -466,9 +517,19 @@ class _ResultScreenState extends State<ResultScreen>
   Widget _reportStat(String label, String value, Color color) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white54, fontSize: 10),
+        ),
         const SizedBox(height: 5),
-        Text(value, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -477,16 +538,27 @@ class _ResultScreenState extends State<ResultScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.warning900.withOpacity(0.3),
+        color: AppColors.warning900.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.warning400.withOpacity(0.5)),
+        border: Border.all(color: AppColors.warning400.withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.workspace_premium, color: AppColors.warning400, size: 14),
+          const Icon(
+            Icons.workspace_premium,
+            color: AppColors.warning400,
+            size: 14,
+          ),
           const SizedBox(width: 6),
-          Text(badge, style: const TextStyle(color: AppColors.warning400, fontSize: 10, fontWeight: FontWeight.bold)),
+          Text(
+            badge,
+            style: const TextStyle(
+              color: AppColors.warning400,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -514,4 +586,3 @@ class _ResultScreenState extends State<ResultScreen>
     }
   }
 }
-
